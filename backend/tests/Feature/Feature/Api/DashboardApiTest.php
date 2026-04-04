@@ -3,13 +3,9 @@
 namespace Tests\Feature\Feature\Api;
 
 use App\Models\Booking;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 
-class DashboardApiTest extends TestCase
+class DashboardApiTest extends AuthenticatedApiTestCase
 {
-    use RefreshDatabase;
-
     public function test_it_returns_dashboard_summary_and_lists(): void
     {
         Booking::factory()->create([

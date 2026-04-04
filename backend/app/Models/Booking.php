@@ -2,14 +2,16 @@
 
 namespace App\Models;
 
+use Database\Factories\BookingFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Model;
 
 class Booking extends Model
 {
-    /** @use HasFactory<\Database\Factories\BookingFactory> */
+    /** @use HasFactory<BookingFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -24,6 +26,8 @@ class Booking extends Model
         'guide_name',
         'status',
         'confirmation_token',
+        'confirmation_token_hash',
+        'confirmation_token_expires_at',
         'confirmed_at',
         'customer_response',
         'customer_responded_at',
@@ -40,6 +44,7 @@ class Booking extends Model
         return [
             'tour_start_at' => 'datetime',
             'confirmed_at' => 'datetime',
+            'confirmation_token_expires_at' => 'datetime',
             'customer_responded_at' => 'datetime',
             'tags' => 'array',
             'needs_attention' => 'boolean',
@@ -64,5 +69,16 @@ class Booking extends Model
     public function statusEvents(): HasMany
     {
         return $this->hasMany(BookingStatusEvent::class);
+    }
+
+    public function scopeVisibleToUser(Builder $query, User $user): void
+    {
+        if ($user->isAdmin()) {
+            return;
+        }
+
+        $query->where(function (Builder $q) use ($user): void {
+            $q->where('bookings.user_id', $user->id)->orWhereNull('bookings.user_id');
+        });
     }
 }

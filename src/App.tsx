@@ -6,8 +6,11 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppLayout } from "@/components/AppLayout";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 const Index = lazy(() => import("./pages/Index"));
+const Landing = lazy(() => import("./pages/Landing"));
+const Login = lazy(() => import("./pages/Login"));
 const BookingList = lazy(() => import("./pages/BookingList"));
 const BookingDetail = lazy(() => import("./pages/BookingDetail"));
 const Chat = lazy(() => import("./pages/Chat"));
@@ -36,6 +39,22 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route
+            path="/"
+            element={
+              <Suspense fallback={<RouteFallback />}>
+                <Landing />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/login"
+            element={
+              <Suspense fallback={<RouteFallback />}>
+                <Login />
+              </Suspense>
+            }
+          />
+          <Route
             path="/booking/:bookingId/respond"
             element={
               <Suspense fallback={<RouteFallback />}>
@@ -43,80 +62,82 @@ const App = () => (
               </Suspense>
             }
           />
-          <Route path="/" element={<AppLayout />}>
-            <Route
-              index
-              element={
-                <Suspense fallback={<RouteFallback />}>
-                  <Index />
-                </Suspense>
-              }
-            />
-            <Route
-              path="bookings"
-              element={
-                <Suspense fallback={<RouteFallback />}>
-                  <BookingList />
-                </Suspense>
-              }
-            />
-            <Route
-              path="customers"
-              element={
-                <Suspense fallback={<RouteFallback />}>
-                  <CustomerList />
-                </Suspense>
-              }
-            />
-            <Route
-              path="analytics"
-              element={
-                <Suspense fallback={<RouteFallback />}>
-                  <Analytics />
-                </Suspense>
-              }
-            />
-            <Route
-              path="bookings/:id"
-              element={
-                <Suspense fallback={<RouteFallback />}>
-                  <BookingDetail />
-                </Suspense>
-              }
-            />
-            <Route
-              path="chat"
-              element={
-                <Suspense fallback={<RouteFallback />}>
-                  <Chat />
-                </Suspense>
-              }
-            />
-            <Route
-              path="chat/:bookingId"
-              element={
-                <Suspense fallback={<RouteFallback />}>
-                  <Chat />
-                </Suspense>
-              }
-            />
-            <Route
-              path="templates"
-              element={
-                <Suspense fallback={<RouteFallback />}>
-                  <ChatTemplates />
-                </Suspense>
-              }
-            />
-            <Route
-              path="*"
-              element={
-                <Suspense fallback={<RouteFallback />}>
-                  <NotFound />
-                </Suspense>
-              }
-            />
+          <Route path="/dashboard" element={<ProtectedRoute />}>
+            <Route element={<AppLayout />}>
+              <Route
+                index
+                element={
+                  <Suspense fallback={<RouteFallback />}>
+                    <Index />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="bookings"
+                element={
+                  <Suspense fallback={<RouteFallback />}>
+                    <BookingList />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="customers"
+                element={
+                  <Suspense fallback={<RouteFallback />}>
+                    <CustomerList />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="analytics"
+                element={
+                  <Suspense fallback={<RouteFallback />}>
+                    <Analytics />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="bookings/:id"
+                element={
+                  <Suspense fallback={<RouteFallback />}>
+                    <BookingDetail />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="chat"
+                element={
+                  <Suspense fallback={<RouteFallback />}>
+                    <Chat />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="chat/:bookingId"
+                element={
+                  <Suspense fallback={<RouteFallback />}>
+                    <Chat />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="templates"
+                element={
+                  <Suspense fallback={<RouteFallback />}>
+                    <ChatTemplates />
+                  </Suspense>
+                }
+              />
+            </Route>
           </Route>
+          <Route
+            path="*"
+            element={
+              <Suspense fallback={<RouteFallback />}>
+                <NotFound />
+              </Suspense>
+            }
+          />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>

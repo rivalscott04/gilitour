@@ -9,26 +9,31 @@ use App\Http\Resources\BookingResource;
 use App\Models\Booking;
 use App\Services\BookingService;
 use Illuminate\Http\Request;
+
 class BookingController extends Controller
 {
-    public function __construct(private readonly BookingService $bookingService)
-    {
-    }
+    public function __construct(private readonly BookingService $bookingService) {}
 
     public function index(Request $request)
     {
-        $bookings = $this->bookingService->paginate($request->all());
+        $this->authorize('viewAny', Booking::class);
+
+        $bookings = $this->bookingService->paginate($request->all(), $request->user());
 
         return BookingResource::collection($bookings);
     }
 
-    public function show(Booking $booking): BookingResource
+    public function show(Request $request, Booking $booking): BookingResource
     {
+        $this->authorize('view', $booking);
+
         return new BookingResource($booking->loadMissing('customer'));
     }
 
     public function updateStatus(UpdateBookingStatusRequest $request, Booking $booking): BookingResource
     {
+        $this->authorize('update', $booking);
+
         $updatedBooking = $this->bookingService->updateStatus($booking, $request->validated('status'));
 
         return new BookingResource($updatedBooking);
@@ -36,6 +41,8 @@ class BookingController extends Controller
 
     public function updateLocalFields(UpdateBookingLocalFieldsRequest $request, Booking $booking): BookingResource
     {
+        $this->authorize('update', $booking);
+
         $updatedBooking = $this->bookingService->updateLocalFields($booking, $request->validated());
 
         return new BookingResource($updatedBooking->loadMissing('customer'));
@@ -43,10 +50,12 @@ class BookingController extends Controller
 
     public function issueConfirmationLink(Booking $booking)
     {
-        $booking = $this->bookingService->generateConfirmationToken($booking);
+        $this->authorize('update', $booking);
+
+        [$booking, $plainToken] = $this->bookingService->generateConfirmationToken($booking);
         $base = config('app.frontend_url');
         $url = $base.'/booking/'.$booking->id.'/respond?'.http_build_query([
-            'token' => $booking->confirmation_token,
+            'token' => $plainToken,
         ]);
 
         return response()->json([
@@ -57,4 +66,3 @@ class BookingController extends Controller
         ]);
     }
 }
-

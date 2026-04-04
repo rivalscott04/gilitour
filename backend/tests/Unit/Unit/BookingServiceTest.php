@@ -3,6 +3,7 @@
 namespace Tests\Unit\Unit;
 
 use App\Models\Booking;
+use App\Models\User;
 use App\Services\BookingService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -24,12 +25,13 @@ class BookingServiceTest extends TestCase
             'status' => 'pending',
         ]);
 
-        $service = new BookingService();
+        $admin = User::factory()->create(['role' => 'admin']);
+        $service = new BookingService;
         $result = $service->paginate([
             'search' => 'Bali',
             'status' => 'confirmed',
             'per_page' => 10,
-        ]);
+        ], $admin);
 
         $this->assertCount(1, $result->items());
         $this->assertSame('Alice', $result->items()[0]->customer_name);

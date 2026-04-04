@@ -11,7 +11,9 @@ class UpdateChatTemplateRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        $template = $this->route('chat_template');
+
+        return $template !== null && $this->user() !== null && $this->user()->can('update', $template);
     }
 
     /**

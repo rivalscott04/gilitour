@@ -3,6 +3,7 @@
 namespace Tests\Unit\Unit;
 
 use App\Models\Booking;
+use App\Models\User;
 use App\Services\DashboardService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -22,7 +23,8 @@ class DashboardServiceTest extends TestCase
             'participants' => 4,
         ]);
 
-        $summary = (new DashboardService())->summary();
+        $admin = User::factory()->create(['role' => 'admin']);
+        $summary = (new DashboardService)->summary($admin);
 
         $this->assertSame(2, $summary['total_bookings']);
         $this->assertSame(2, $summary['upcoming_tours']);

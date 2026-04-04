@@ -3,12 +3,20 @@
 namespace Tests\Feature\Feature\Api;
 
 use App\Models\Booking;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
+use App\Models\User;
 
-class BookingApiTest extends TestCase
+class BookingApiTest extends AuthenticatedApiTestCase
 {
-    use RefreshDatabase;
+    public function test_operator_cannot_access_booking_owned_by_peer(): void
+    {
+        $peer = User::factory()->create(['role' => 'operator']);
+        $booking = Booking::factory()->create(['user_id' => $peer->id]);
+
+        $this->getJson("/api/v1/bookings/{$booking->id}")->assertForbidden();
+        $this->patchJson("/api/v1/bookings/{$booking->id}/status", [
+            'status' => 'confirmed',
+        ])->assertForbidden();
+    }
 
     public function test_it_lists_bookings_with_filters(): void
     {
@@ -57,11 +65,16 @@ class BookingApiTest extends TestCase
         $booking = Booking::factory()->create([
             'status' => 'pending',
             'confirmation_token' => null,
+            'confirmation_token_hash' => null,
+            'confirmation_token_expires_at' => null,
         ]);
 
-        $this->postJson("/api/v1/bookings/{$booking->id}/issue-confirm-link")->assertOk();
-        $token = $booking->fresh()->confirmation_token;
-        $this->assertNotNull($token);
+        $issue = $this->postJson("/api/v1/bookings/{$booking->id}/issue-confirm-link")->assertOk();
+        $link = $issue->json('data.confirm_url');
+        $this->assertIsString($link);
+        parse_str((string) parse_url($link, PHP_URL_QUERY), $query);
+        $token = $query['token'] ?? '';
+        $this->assertNotSame('', $token);
 
         $this->getJson("/api/v1/bookings/{$booking->id}/magic-link?token={$token}")
             ->assertOk()
@@ -85,7 +98,9 @@ class BookingApiTest extends TestCase
     {
         $pending = Booking::factory()->create([
             'status' => 'pending',
-            'confirmation_token' => 'tok-cancel-test',
+            'confirmation_token' => null,
+            'confirmation_token_hash' => hash('sha256', 'tok-cancel-test'),
+            'confirmation_token_expires_at' => now()->addDay(),
             'needs_attention' => false,
         ]);
 
@@ -100,7 +115,9 @@ class BookingApiTest extends TestCase
 
         $confirmed = Booking::factory()->create([
             'status' => 'confirmed',
-            'confirmation_token' => 'tok-resched-test',
+            'confirmation_token' => null,
+            'confirmation_token_hash' => hash('sha256', 'tok-resched-test'),
+            'confirmation_token_expires_at' => now()->addDay(),
             'needs_attention' => false,
         ]);
 

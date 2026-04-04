@@ -6,13 +6,9 @@ use App\Models\Booking;
 use App\Models\BookingStatusEvent;
 use App\Models\ChatMessage;
 use App\Models\Customer;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 
-class AnalyticsApiTest extends TestCase
+class AnalyticsApiTest extends AuthenticatedApiTestCase
 {
-    use RefreshDatabase;
-
     public function test_it_returns_analytics_overview(): void
     {
         $customerA = Customer::factory()->create(['external_source' => 'getyourguide']);

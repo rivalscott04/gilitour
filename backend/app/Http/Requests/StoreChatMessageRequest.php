@@ -11,7 +11,9 @@ class StoreChatMessageRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        $booking = $this->route('booking');
+
+        return $booking !== null && $this->user() !== null && $this->user()->can('update', $booking);
     }
 
     /**

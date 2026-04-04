@@ -1,15 +1,20 @@
 import { useNavigate, useLocation, Outlet } from "react-router-dom";
-import { LayoutDashboard, CalendarCheck, MessageCircle, Menu, X, FileText, Users, BarChart3 } from "lucide-react";
+import { LayoutDashboard, CalendarCheck, MessageCircle, Menu, X, FileText, Users, BarChart3, LogOut } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { apiPost, clearAuthSession } from "@/lib/api-client";
+import { DASHBOARD_BASE } from "@/lib/routes";
+import { toast } from "sonner";
+
+const base = DASHBOARD_BASE;
 
 const navItems = [
-  { label: "Dashboard", path: "/", icon: LayoutDashboard },
-  { label: "Bookings", path: "/bookings", icon: CalendarCheck },
-  { label: "Customers", path: "/customers", icon: Users },
-  { label: "Analytics", path: "/analytics", icon: BarChart3 },
-  { label: "Chat", path: "/chat", icon: MessageCircle },
-  { label: "Templates", path: "/templates", icon: FileText },
+  { label: "Dashboard", path: base, icon: LayoutDashboard },
+  { label: "Bookings", path: `${base}/bookings`, icon: CalendarCheck },
+  { label: "Customers", path: `${base}/customers`, icon: Users },
+  { label: "Analytics", path: `${base}/analytics`, icon: BarChart3 },
+  { label: "Chat", path: `${base}/chat`, icon: MessageCircle },
+  { label: "Templates", path: `${base}/templates`, icon: FileText },
 ];
 
 export function AppLayout() {
@@ -18,8 +23,21 @@ export function AppLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const isActive = (path: string) => {
-    if (path === "/") return location.pathname === "/";
+    if (path === base) {
+      return location.pathname === base || location.pathname === `${base}/`;
+    }
     return location.pathname.startsWith(path);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await apiPost<{ data: { message: string } }>("/auth/logout", {});
+    } catch {
+      // Token may already be invalid; still clear local session.
+    }
+    clearAuthSession();
+    toast.success("Logged out");
+    navigate("/login");
   };
 
   return (
@@ -34,7 +52,7 @@ export function AppLayout() {
             >
               {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
-            <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
+            <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate(base)}>
               <img src="/logo.svg" alt="Logo" className="w-6 h-6 object-contain" />
               <h1 className="text-lg font-semibold text-primary-foreground">
                 Gilitour
@@ -59,6 +77,14 @@ export function AppLayout() {
                 {item.label}
               </button>
             ))}
+            <button
+              type="button"
+              onClick={() => void handleLogout()}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold tracking-[0.1px] text-primary-foreground/85 hover:text-primary-foreground hover:bg-primary-foreground/12"
+            >
+              <LogOut className="h-4 w-4" />
+              Log out
+            </button>
           </nav>
         </div>
       </header>
@@ -82,6 +108,14 @@ export function AppLayout() {
                 {item.label}
               </button>
             ))}
+            <button
+              type="button"
+              onClick={() => { setMobileOpen(false); void handleLogout(); }}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold tracking-[0.1px] text-primary-foreground/85 hover:text-primary-foreground hover:bg-primary-foreground/12"
+            >
+              <LogOut className="h-5 w-5" />
+              Log out
+            </button>
           </nav>
         </div>
       )}

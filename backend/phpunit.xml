@@ -32,5 +32,8 @@
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>
+        <!-- Low limit so rate-limit tests need few HTTP round-trips (prod default via config is higher) -->
+        <env name="MAGIC_LINK_PER_BOOKING_IP" value="5"/>
+        <env name="MAGIC_LINK_PER_IP" value="500"/>
     </php>
 </phpunit>

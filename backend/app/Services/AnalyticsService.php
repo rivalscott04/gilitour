@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use App\Models\Booking;
 use App\Models\Customer;
+use App\Models\User;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Support\Facades\DB;
@@ -11,20 +11,33 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AnalyticsService
 {
-    public function overview(): array
+    public function overview(User $viewer): array
     {
-        $totalCustomers = Customer::query()->count();
-        $totalBookings = Booking::query()->count();
-        $confirmedBookings = Booking::query()->where('status', 'confirmed')->count();
-        $needsAttention = Booking::query()->where('needs_attention', true)->count();
+        $bookings = $viewer->bookingsVisibleQuery();
 
-        $repeatCustomers = Customer::query()
-            ->withCount('bookings')
+        $totalBookings = (clone $bookings)->count();
+        $confirmedBookings = (clone $bookings)->where('status', 'confirmed')->count();
+        $needsAttention = (clone $bookings)->where('needs_attention', true)->count();
+
+        $customerQuery = Customer::query()->whereHas('bookings', function ($q) use ($viewer): void {
+            $q->visibleToUser($viewer);
+        });
+
+        $totalCustomers = (clone $customerQuery)->count();
+
+        $repeatCustomers = (clone $customerQuery)
+            ->withCount([
+                'bookings' => function ($q) use ($viewer): void {
+                    if (! $viewer->isAdmin()) {
+                        $q->visibleToUser($viewer);
+                    }
+                },
+            ])
             ->get()
             ->where('bookings_count', '>', 1)
             ->count();
 
-        $statusBreakdown = Booking::query()
+        $statusBreakdown = (clone $bookings)
             ->select('status', DB::raw('COUNT(*) as total'))
             ->groupBy('status')
             ->get()
@@ -36,6 +49,9 @@ class AnalyticsService
             ->all();
 
         $sourceBreakdown = Customer::query()
+            ->whereHas('bookings', function ($q) use ($viewer): void {
+                $q->visibleToUser($viewer);
+            })
             ->select('external_source', DB::raw('COUNT(*) as total'))
             ->groupBy('external_source')
             ->orderByDesc('total')
@@ -55,11 +71,11 @@ class AnalyticsService
             'repeat_customer_rate' => $totalCustomers > 0 ? round(($repeatCustomers / $totalCustomers) * 100, 2) : 0,
             'status_breakdown' => $statusBreakdown,
             'source_breakdown' => $sourceBreakdown,
-            'top_tags' => $this->topTags(),
+            'top_tags' => $this->topTags($viewer),
         ];
     }
 
-    public function trends(string $period = 'weekly'): array
+    public function trends(User $viewer, string $period = 'weekly'): array
     {
         $isMonthly = $period === 'monthly';
         $points = $isMonthly ? 6 : 8;
@@ -68,7 +84,7 @@ class AnalyticsService
             : now()->startOfWeek()->subWeeks($points - 1);
         $end = now()->endOfDay();
 
-        $bookings = Booking::query()
+        $bookings = $viewer->bookingsVisibleQuery()
             ->with(['chatMessages' => fn ($q) => $q->orderBy('created_at')])
             ->whereBetween('tour_start_at', [$start, $end])
             ->get();
@@ -130,11 +146,20 @@ class AnalyticsService
             ];
         })->all();
 
-        $standbyNow = Booking::query()->where('status', 'standby')->count();
-        $standbyToConfirmed = DB::table('booking_status_events')
-            ->where('old_status', 'standby')
-            ->where('new_status', 'confirmed')
-            ->count();
+        $standbyNow = (clone $viewer->bookingsVisibleQuery())->where('status', 'standby')->count();
+
+        $standbyToConfirmedQuery = DB::table('booking_status_events')
+            ->join('bookings', 'bookings.id', '=', 'booking_status_events.booking_id')
+            ->where('booking_status_events.old_status', 'standby')
+            ->where('booking_status_events.new_status', 'confirmed');
+
+        if (! $viewer->isAdmin()) {
+            $standbyToConfirmedQuery->where(function ($q) use ($viewer): void {
+                $q->where('bookings.user_id', $viewer->id)->orWhereNull('bookings.user_id');
+            });
+        }
+
+        $standbyToConfirmed = $standbyToConfirmedQuery->count();
         $funnelBase = $standbyNow + $standbyToConfirmed;
 
         return [
@@ -148,9 +173,9 @@ class AnalyticsService
         ];
     }
 
-    public function exportBookingsCsv(): StreamedResponse
+    public function exportBookingsCsv(User $viewer): StreamedResponse
     {
-        $rows = Booking::query()
+        $rows = $viewer->bookingsVisibleQuery()
             ->with('customer')
             ->orderByDesc('tour_start_at')
             ->get();
@@ -190,9 +215,9 @@ class AnalyticsService
         }, 'bookings-ops-export.csv', ['Content-Type' => 'text/csv']);
     }
 
-    private function topTags(): array
+    private function topTags(User $viewer): array
     {
-        $tags = Booking::query()
+        $tags = $viewer->bookingsVisibleQuery()
             ->whereNotNull('tags')
             ->pluck('tags')
             ->flatten()

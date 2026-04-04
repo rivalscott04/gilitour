@@ -2,29 +2,30 @@
 
 namespace App\Services;
 
-use App\Models\Booking;
+use App\Models\User;
 use Illuminate\Support\Carbon;
 
 class DashboardService
 {
-    public function summary(): array
+    public function summary(User $viewer): array
     {
         $now = now();
-        $upcoming = Booking::query()->where('tour_start_at', '>=', $now);
+        $base = $viewer->bookingsVisibleQuery();
+        $upcoming = (clone $base)->where('tour_start_at', '>=', $now);
 
         return [
-            'total_bookings' => Booking::query()->count(),
+            'total_bookings' => (clone $base)->count(),
             'upcoming_tours' => (clone $upcoming)->count(),
             'guests_expected' => (clone $upcoming)->sum('participants'),
-            'needs_attention' => Booking::query()
+            'needs_attention' => (clone $base)
                 ->whereBetween('tour_start_at', [$now, Carbon::now()->addDay()])
                 ->count(),
         ];
     }
 
-    public function urgentBookings(int $limit = 3)
+    public function urgentBookings(User $viewer, int $limit = 3)
     {
-        return Booking::query()
+        return $viewer->bookingsVisibleQuery()
             ->with('customer')
             ->whereBetween('tour_start_at', [now(), now()->addDay()])
             ->orderBy('tour_start_at')
@@ -32,8 +33,12 @@ class DashboardService
             ->get();
     }
 
-    public function recentBookings(int $limit = 6)
+    public function recentBookings(User $viewer, int $limit = 6)
     {
-        return Booking::query()->with('customer')->latest()->limit($limit)->get();
+        return $viewer->bookingsVisibleQuery()
+            ->with('customer')
+            ->latest()
+            ->limit($limit)
+            ->get();
     }
 }

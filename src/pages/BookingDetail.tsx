@@ -11,6 +11,13 @@ import { EmptyState, ErrorState } from "@/components/states";
 import { RefreshHint } from "@/components/feedback/RefreshHint";
 import { PageHeader } from "@/components/layout";
 import { digitsForWhatsApp } from "@/lib/utils";
+import { DASHBOARD_BASE } from "@/lib/routes";
+
+const WHATSAPP_PREFILL_MAX_LEN = 2000;
+
+function clipWhatsAppPrefill(text: string): string {
+  return text.length <= WHATSAPP_PREFILL_MAX_LEN ? text : text.slice(0, WHATSAPP_PREFILL_MAX_LEN);
+}
 
 export default function BookingDetail() {
   const { id } = useParams();
@@ -42,7 +49,7 @@ export default function BookingDetail() {
     return (
       <div className="py-16 space-y-4">
         <ErrorState title="Failed to load booking" onRetry={() => refetch()} />
-        <Button variant="ghost" className="mt-4" onClick={() => navigate("/bookings")}>
+        <Button variant="ghost" className="mt-4" onClick={() => navigate(`${DASHBOARD_BASE}/bookings`)}>
           Back to bookings
         </Button>
       </div>
@@ -53,7 +60,7 @@ export default function BookingDetail() {
     return (
       <div className="py-16">
         <EmptyState title="Booking not found" />
-        <Button variant="ghost" className="mt-4" onClick={() => navigate("/bookings")}>
+        <Button variant="ghost" className="mt-4" onClick={() => navigate(`${DASHBOARD_BASE}/bookings`)}>
           Back to bookings
         </Button>
       </div>
@@ -119,7 +126,10 @@ export default function BookingDetail() {
         "Thank you!",
       ].join("\n");
 
-      window.open(`https://wa.me/${digits}?text=${encodeURIComponent(text)}`, "_blank");
+      window.open(
+        `https://wa.me/${digits}?text=${encodeURIComponent(clipWhatsAppPrefill(text))}`,
+        "_blank",
+      );
     } catch {
       toast.error("Could not create reminder link. Try again.");
     }
@@ -203,7 +213,10 @@ export default function BookingDetail() {
             onClick={() => {
               if (!canWhatsApp) return;
               const text = `Hi ${booking.customerName}, this is about your booking for "${booking.tourName}" (ref ${booking.id}).`;
-              window.open(`https://wa.me/${waDigits}?text=${encodeURIComponent(text)}`, "_blank");
+              window.open(
+                `https://wa.me/${waDigits}?text=${encodeURIComponent(clipWhatsAppPrefill(text))}`,
+                "_blank",
+              );
             }}
           >
             <MessageCircle className="h-4 w-4" />
@@ -229,7 +242,10 @@ export default function BookingDetail() {
                   customerName: booking.customerName,
                   tourName: booking.tourName,
                 });
-                window.open(`https://wa.me/${waDigits}?text=${encodeURIComponent(text)}`, "_blank");
+                window.open(
+                  `https://wa.me/${waDigits}?text=${encodeURIComponent(clipWhatsAppPrefill(text))}`,
+                  "_blank",
+                );
               }}
             >
               Send reminder

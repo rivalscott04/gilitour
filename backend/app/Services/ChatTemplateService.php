@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\ChatTemplate;
+use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class ChatTemplateService
@@ -25,11 +26,18 @@ class ChatTemplateService
         ],
     ];
 
-    public function paginate(int $perPage = 15): LengthAwarePaginator
+    public function paginate(User $viewer, int $perPage = 15): LengthAwarePaginator
     {
         $this->ensureDefaults();
 
-        return ChatTemplate::query()->latest()->paginate($perPage);
+        return ChatTemplate::query()
+            ->when(! $viewer->isAdmin(), function ($query) use ($viewer): void {
+                $query->where(function ($q) use ($viewer): void {
+                    $q->whereNull('user_id')->orWhere('user_id', $viewer->id);
+                });
+            })
+            ->latest()
+            ->paginate($perPage);
     }
 
     private function ensureDefaults(): void

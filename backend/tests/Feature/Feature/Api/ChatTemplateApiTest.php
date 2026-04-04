@@ -2,13 +2,8 @@
 
 namespace Tests\Feature\Feature\Api;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
-
-class ChatTemplateApiTest extends TestCase
+class ChatTemplateApiTest extends AuthenticatedApiTestCase
 {
-    use RefreshDatabase;
-
     public function test_it_returns_frontend_default_templates_when_empty(): void
     {
         $response = $this->getJson('/api/v1/chat-templates');

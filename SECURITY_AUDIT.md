@@ -44,7 +44,6 @@ Risiko SQL Injection langsung tidak terlihat pada area yang diperiksa, karena qu
 - `backend/app/Http/Requests/StoreChatMessageRequest.php`
 - `backend/app/Http/Requests/StoreChatTemplateRequest.php`
 - `backend/app/Http/Requests/UpdateChatTemplateRequest.php`
-- `backend/app/Http/Requests/StoreWhatsappWebhookRequest.php`
 
 **Deskripsi**
 - Semua request class di atas mengembalikan `true` pada `authorize()`.
@@ -59,23 +58,11 @@ Risiko SQL Injection langsung tidak terlihat pada area yang diperiksa, karena qu
 
 ---
 
-## 3) [HIGH] Webhook WhatsApp dapat disalahgunakan (spoofing request)
+## 3) [CLOSED] Webhook WhatsApp (tidak dipakai produk)
 
-**Lokasi**
-- `backend/app/Http/Controllers/Api/V1/WebhookController.php`
-- `backend/app/Http/Requests/StoreWhatsappWebhookRequest.php`
+**Status pembaruan:** Endpoint inbound WhatsApp dan seluruh kode terkait **telah dihapus**. Produk hanya memakai tautan langsung ke WhatsApp (`wa.me`) dari browser/app; tidak ada WhatsApp Business API / webhook.
 
-**Deskripsi**
-- Endpoint webhook menerima `booking_id` + `message` dan dapat memicu update status (`confirmByCustomerMessage`) tanpa verifikasi signature asal webhook.
-- Tidak terlihat mekanisme anti-replay.
-
-**Dampak**
-- Attacker dapat memalsukan request webhook untuk mengubah status booking.
-
-**Rekomendasi**
-- Verifikasi signature resmi provider webhook.
-- Tambahkan timestamp + nonce/replay protection.
-- Tambahkan rate limiting khusus endpoint webhook.
+Temuan audit asli pada endpoint webhook tidak lagi relevan.
 
 ---
 
@@ -105,7 +92,7 @@ Risiko SQL Injection langsung tidak terlihat pada area yang diperiksa, karena qu
 - `backend/routes/api.php`
 
 **Deskripsi**
-- Tidak terlihat throttle spesifik untuk endpoint sensitif (`status update`, `send message`, `webhook`, dll).
+- Tidak terlihat throttle spesifik untuk endpoint sensitif (`status update`, `send message`, dll).
 
 **Dampak**
 - Risiko abuse, brute-force, dan resource exhaustion meningkat.
@@ -174,7 +161,6 @@ Risiko SQL Injection langsung tidak terlihat pada area yang diperiksa, karena qu
   - enum status
   - max length string
   - array tags
-  - exists constraint untuk `booking_id` di webhook
 
 ### Gap utama
 - Authorization belum melekat pada validasi request (`authorize()` masih `true`).
@@ -186,11 +172,10 @@ Risiko SQL Injection langsung tidak terlihat pada area yang diperiksa, karena qu
 1. Proteksi route API dengan autentikasi (`auth:sanctum`/mekanisme terpilih).
 2. Implementasi policy/ownership checks untuk resource sensitif.
 3. Refactor semua `FormRequest::authorize()` agar cek permission.
-4. Hardening webhook (signature + anti replay + throttling).
-5. Hardening confirmation link (expiry + one-time token + hash).
-6. Tambahkan throttling granular dan security logging.
-7. Tambahkan validasi frontend sebagai defense-in-depth.
-8. Pastikan konfigurasi production aman (`APP_DEBUG=false`, HTTPS, secure cookies).
+4. Hardening confirmation link (expiry + one-time token + hash).
+5. Tambahkan throttling granular dan security logging.
+6. Tambahkan validasi frontend sebagai defense-in-depth.
+7. Pastikan konfigurasi production aman (`APP_DEBUG=false`, HTTPS, secure cookies).
 
 ---
 

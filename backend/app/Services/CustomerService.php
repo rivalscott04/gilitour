@@ -3,11 +3,12 @@
 namespace App\Services;
 
 use App\Models\Customer;
+use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class CustomerService
 {
-    public function paginate(array $filters): LengthAwarePaginator
+    public function paginate(array $filters, User $viewer): LengthAwarePaginator
     {
         $perPage = max((int) ($filters['per_page'] ?? 15), 1);
         $sortBy = $filters['sort_by'] ?? 'created_at';
@@ -22,7 +23,18 @@ class CustomerService
         }
 
         return Customer::query()
-            ->withCount('bookings')
+            ->when(! $viewer->isAdmin(), function ($query) use ($viewer): void {
+                $query->whereHas('bookings', function ($q) use ($viewer): void {
+                    $q->visibleToUser($viewer);
+                });
+            })
+            ->withCount([
+                'bookings' => function ($q) use ($viewer): void {
+                    if (! $viewer->isAdmin()) {
+                        $q->visibleToUser($viewer);
+                    }
+                },
+            ])
             ->when($filters['search'] ?? null, function ($query, string $search): void {
                 $query->where(function ($nested) use ($search): void {
                     $nested->where('full_name', 'like', '%'.$search.'%')

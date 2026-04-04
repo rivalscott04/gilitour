@@ -4,13 +4,14 @@ namespace App\Services;
 
 use App\Models\Booking;
 use App\Models\ChatMessage;
+use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class ChatService
 {
-    public function threadList(?string $search): array
+    public function threadList(?string $search, User $viewer): array
     {
-        return Booking::query()
+        return $viewer->bookingsVisibleQuery()
             ->with(['chatMessages' => fn ($query) => $query->latest()->limit(1)])
             ->when($search, fn ($query, string $value) => $query->where('customer_name', 'like', '%'.$value.'%'))
             ->whereHas('chatMessages')

@@ -6,6 +6,7 @@ import { useBookings } from "@/hooks/use-bookings";
 import { EmptyState, ErrorState, LoadingCardGrid } from "@/components/states";
 import { PageHeader, PageSection } from "@/components/layout";
 import { RefreshHint } from "@/components/feedback/RefreshHint";
+import { DASHBOARD_BASE } from "@/lib/routes";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -27,7 +28,7 @@ export default function Dashboard() {
       value: needsAttention,
       icon: AlertTriangle,
       color: "text-warning",
-      onClick: () => navigate("/bookings?needs_attention=1"),
+      onClick: () => navigate(`${DASHBOARD_BASE}/bookings?needs_attention=1`),
       emphasized: true,
     },
     {
@@ -35,7 +36,7 @@ export default function Dashboard() {
       value: bookings.length,
       icon: CalendarCheck,
       color: "text-primary",
-      onClick: () => navigate("/bookings"),
+      onClick: () => navigate(`${DASHBOARD_BASE}/bookings`),
       emphasized: false,
     },
     {
@@ -43,7 +44,7 @@ export default function Dashboard() {
       value: upcoming.length,
       icon: Clock,
       color: "text-secondary",
-      onClick: () => navigate("/bookings?status=confirmed"),
+      onClick: () => navigate(`${DASHBOARD_BASE}/bookings?status=confirmed`),
       emphasized: false,
     },
     {
@@ -51,7 +52,7 @@ export default function Dashboard() {
       value: totalGuests,
       icon: Users,
       color: "text-primary",
-      onClick: () => navigate("/bookings"),
+      onClick: () => navigate(`${DASHBOARD_BASE}/bookings`),
       emphasized: false,
     },
   ];
@@ -95,7 +96,7 @@ export default function Dashboard() {
         <PageSection
           title="Starting soon"
           action={
-            <Button variant="ghost" size="sm" onClick={() => navigate("/bookings")}>
+            <Button variant="ghost" size="sm" onClick={() => navigate(`${DASHBOARD_BASE}/bookings`)}>
               View all
             </Button>
           }
@@ -112,7 +113,7 @@ export default function Dashboard() {
       <PageSection
         title="Recent bookings"
         action={
-          <Button variant="ghost" size="sm" onClick={() => navigate("/bookings")}>
+          <Button variant="ghost" size="sm" onClick={() => navigate(`${DASHBOARD_BASE}/bookings`)}>
             View all
           </Button>
         }

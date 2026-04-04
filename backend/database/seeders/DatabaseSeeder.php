@@ -8,9 +8,9 @@ use App\Models\ChatMessage;
 use App\Models\ChatTemplate;
 use App\Models\Customer;
 use App\Models\User;
-use Illuminate\Support\Carbon;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class DatabaseSeeder extends Seeder
@@ -37,19 +37,32 @@ class DatabaseSeeder extends Seeder
     {
         $this->resetSeedData();
 
-        $operator = User::query()->firstOrCreate([
-            'email' => 'ops@gilitour.test',
-        ], [
-            'name' => 'Ops Lead',
-            'password' => 'password',
-        ]);
+        User::query()->updateOrCreate(
+            ['email' => 'admin@gilitour.test'],
+            [
+                'name' => 'Admin',
+                'password' => 'password',
+                'role' => 'admin',
+            ],
+        );
 
-        User::query()->firstOrCreate([
-            'email' => 'support@gilitour.test',
-        ], [
-            'name' => 'Support Agent',
-            'password' => 'password',
-        ]);
+        $operator = User::query()->updateOrCreate(
+            ['email' => 'ops@gilitour.test'],
+            [
+                'name' => 'Ops Lead',
+                'password' => 'password',
+                'role' => 'operator',
+            ],
+        );
+
+        User::query()->updateOrCreate(
+            ['email' => 'support@gilitour.test'],
+            [
+                'name' => 'Support Agent',
+                'password' => 'password',
+                'role' => 'operator',
+            ],
+        );
 
         ChatTemplate::query()->firstOrCreate(
             ['name' => 'Booking Reminder'],
@@ -192,7 +205,7 @@ class DatabaseSeeder extends Seeder
         Booking::query()->delete();
         Customer::query()->delete();
         ChatTemplate::query()->delete();
-        User::query()->whereIn('email', ['ops@gilitour.test', 'support@gilitour.test'])->delete();
+        User::query()->whereIn('email', ['admin@gilitour.test', 'ops@gilitour.test', 'support@gilitour.test'])->delete();
         if (DB::getDriverName() === 'mysql') {
             DB::statement('SET FOREIGN_KEY_CHECKS=1');
         } else {

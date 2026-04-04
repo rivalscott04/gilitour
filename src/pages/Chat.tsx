@@ -13,6 +13,9 @@ import { useChatMessages, useChatThreads, useSendChatMessage } from "@/hooks/use
 import type { ChatMessage } from "@/types/chat";
 import { EmptyState, ErrorState, LoadingState } from "@/components/states";
 import { PageHeader } from "@/components/layout";
+import { DASHBOARD_BASE } from "@/lib/routes";
+
+const CHAT_MESSAGE_MAX_LEN = 2000;
 
 function ChatBubble({ msg, showAvatar }: { msg: ChatMessage; showAvatar?: boolean }) {
   const isOperator = msg.sender === "operator";
@@ -164,7 +167,7 @@ export default function Chat() {
   }, [messages]);
 
   const handleSend = () => {
-    const message = input.trim();
+    const message = input.trim().slice(0, CHAT_MESSAGE_MAX_LEN);
     if (!message || !bookingId) return;
     sendMessageMutation.mutate(
       { bookingId, message, source: "whatsapp" },
@@ -176,7 +179,7 @@ export default function Chat() {
   };
 
   const handleSelectBooking = (id: string) => {
-    navigate(`/chat/${id}`);
+    navigate(`${DASHBOARD_BASE}/chat/${id}`);
   };
 
   const handleConfirmBooking = () => {
@@ -218,11 +221,11 @@ export default function Chat() {
             <div>
               <h3 className="font-semibold">{booking.customerName}</h3>
               <p className="text-sm text-muted-foreground flex items-center gap-1">
-                Via WhatsApp Cloud API
+                WhatsApp (opens chat via wa.me)
               </p>
             </div>
             {/* Show on mobile to go back */}
-            <Button variant="ghost" size="sm" className="lg:hidden" onClick={() => navigate('/chat')}>
+            <Button variant="ghost" size="sm" className="lg:hidden" onClick={() => navigate(`${DASHBOARD_BASE}/chat`)}>
               Back
             </Button>
           </div>
@@ -248,10 +251,14 @@ export default function Chat() {
               {chatTemplates.map((reply) => (
                 <button
                   key={reply.id}
-                  onClick={() => setInput(evaluateTemplate(reply.content, {
-                    customerName: booking.customerName,
-                    tourName: booking.tourName
-                  }))}
+                  onClick={() =>
+                    setInput(
+                      evaluateTemplate(reply.content, {
+                        customerName: booking.customerName,
+                        tourName: booking.tourName,
+                      }).slice(0, CHAT_MESSAGE_MAX_LEN),
+                    )
+                  }
                   className="whitespace-nowrap px-3 py-1.5 bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground text-sm rounded-full transition-colors border border-border"
                   title={reply.name}
                 >
@@ -264,7 +271,8 @@ export default function Chat() {
               <Input
                 placeholder="Type a message to WhatsApp..."
                 value={input}
-                onChange={(e) => setInput(e.target.value)}
+                maxLength={CHAT_MESSAGE_MAX_LEN}
+                onChange={(e) => setInput(e.target.value.slice(0, CHAT_MESSAGE_MAX_LEN))}
                 onKeyDown={(e) => e.key === "Enter" && handleSend()}
                 className="flex-1 rounded-full px-4 h-11 bg-muted/50 border-transparent focus-visible:border-primary"
               />
@@ -357,7 +365,7 @@ export default function Chat() {
                </div>
              </div>
 
-             <Button className="w-full mt-4" variant="outline" onClick={() => navigate(`/bookings/${booking.id}`)}>
+             <Button className="w-full mt-4" variant="outline" onClick={() => navigate(`${DASHBOARD_BASE}/bookings/${booking.id}`)}>
                View Full Invoice
              </Button>
           </div>

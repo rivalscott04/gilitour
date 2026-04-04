@@ -6,6 +6,7 @@ import { StatusBadge } from "./StatusBadge";
 import { CountdownTimer } from "./CountdownTimer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { DASHBOARD_BASE } from "@/lib/routes";
 
 export function BookingCard({
   booking,
@@ -73,7 +74,7 @@ export function BookingCard({
           variant="outline"
           size="sm"
           className="flex-1 gap-1.5"
-          onClick={() => navigate(`/chat/${booking.id}`)}
+          onClick={() => navigate(`${DASHBOARD_BASE}/chat/${booking.id}`)}
         >
           <MessageCircle className="h-4 w-4" />
           Chat
@@ -91,7 +92,7 @@ export function BookingCard({
         <Button
           size="sm"
           className="flex-1 gap-1.5"
-          onClick={() => navigate(`/bookings/${booking.id}`)}
+          onClick={() => navigate(`${DASHBOARD_BASE}/bookings/${booking.id}`)}
         >
           View details
           <ChevronRight className="h-4 w-4" />

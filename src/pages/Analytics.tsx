@@ -9,6 +9,7 @@ import { EmptyState, ErrorState, LoadingCardGrid } from "@/components/states";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { API_BASE_URL } from "@/lib/api-client";
+import { DASHBOARD_BASE } from "@/lib/routes";
 import { CartesianGrid, Line, LineChart, Bar, BarChart, XAxis } from "recharts";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 
@@ -193,7 +194,7 @@ export default function Analytics() {
               "Moderate follow-up load. Keep reminders and confirmation checks running on schedule."}
             {attentionLevel === "healthy" && "Attention load is healthy. Focus on improving repeat customer experience."}
           </p>
-          <Button className="mt-4 gap-2" onClick={() => navigate("/bookings?needs_attention=1")}>
+          <Button className="mt-4 gap-2" onClick={() => navigate(`${DASHBOARD_BASE}/bookings?needs_attention=1`)}>
             Review high-priority bookings
             <ArrowRight className="h-4 w-4" />
           </Button>

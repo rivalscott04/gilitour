@@ -4,13 +4,9 @@ namespace Tests\Feature\Feature\Api;
 
 use App\Models\Booking;
 use App\Models\Customer;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 
-class CustomerApiTest extends TestCase
+class CustomerApiTest extends AuthenticatedApiTestCase
 {
-    use RefreshDatabase;
-
     public function test_it_lists_customers_with_search_and_booking_count(): void
     {
         $john = Customer::factory()->create([

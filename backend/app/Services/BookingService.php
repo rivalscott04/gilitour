@@ -4,12 +4,13 @@ namespace App\Services;
 
 use App\Models\Booking;
 use App\Models\BookingStatusEvent;
-use Illuminate\Support\Str;
+use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Str;
 
 class BookingService
 {
-    public function paginate(array $filters): LengthAwarePaginator
+    public function paginate(array $filters, User $viewer): LengthAwarePaginator
     {
         $perPage = (int) ($filters['per_page'] ?? 15);
         $sortBy = $filters['sort_by'] ?? 'tour_start_at';
@@ -23,7 +24,7 @@ class BookingService
             $sortDir = 'asc';
         }
 
-        return Booking::query()
+        return $viewer->bookingsVisibleQuery()
             ->with('customer')
             ->when($filters['search'] ?? null, function ($query, string $search): void {
                 $query->where(function ($nested) use ($search): void {
@@ -57,43 +58,19 @@ class BookingService
         return $booking->refresh();
     }
 
-    public function generateConfirmationToken(Booking $booking): Booking
+    /**
+     * @return array{0: Booking, 1: string}
+     */
+    public function generateConfirmationToken(Booking $booking): array
     {
-        if ($booking->confirmation_token) {
-            return $booking;
-        }
-
+        $plain = Str::random(48);
         $booking->update([
-            'confirmation_token' => Str::random(40),
+            'confirmation_token' => null,
+            'confirmation_token_hash' => hash('sha256', $plain),
+            'confirmation_token_expires_at' => now()->addDays(7),
         ]);
 
-        return $booking->refresh();
-    }
-
-    public function confirmByCustomerMessage(Booking $booking, string $sourceMessageId, array $metadata = []): Booking
-    {
-        if ($booking->status === 'confirmed') {
-            return $booking;
-        }
-
-        $oldStatus = $booking->status;
-        $booking->update([
-            'status' => 'confirmed',
-            'confirmed_at' => now(),
-        ]);
-
-        $this->logStatusEvent(
-            $booking,
-            $oldStatus,
-            'confirmed',
-            'system',
-            'wa_positive_reply',
-            'whatsapp',
-            $sourceMessageId,
-            $metadata
-        );
-
-        return $booking->refresh();
+        return [$booking->refresh(), $plain];
     }
 
     /**

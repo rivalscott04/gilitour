@@ -12,32 +12,36 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class ChatController extends Controller
 {
-    public function __construct(private readonly ChatService $chatService)
-    {
-    }
+    public function __construct(private readonly ChatService $chatService) {}
 
     public function index(Request $request)
     {
+        $this->authorize('viewAny', Booking::class);
+
         return response()->json([
-            'data' => $this->chatService->threadList($request->query('search')),
+            'data' => $this->chatService->threadList($request->query('search'), $request->user()),
         ]);
     }
 
     public function messages(Request $request, Booking $booking): AnonymousResourceCollection
     {
+        $this->authorize('view', $booking);
+
         $messages = $this->chatService->messages($booking, (int) $request->query('per_page', 15));
 
         return ChatMessageResource::collection($messages);
     }
 
-    public function sendMessage(StoreChatMessageRequest $request, Booking $booking): ChatMessageResource
+    public function sendMessage(StoreChatMessageRequest $request, Booking $booking)
     {
+        $this->authorize('update', $booking);
+
         $message = $this->chatService->sendMessage(
             $booking,
             $request->validated('message'),
             $request->validated('source', 'whatsapp')
         );
 
-        return new ChatMessageResource($message);
+        return (new ChatMessageResource($message))->toResponse($request)->setStatusCode(201);
     }
 }

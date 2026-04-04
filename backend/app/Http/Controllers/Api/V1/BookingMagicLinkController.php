@@ -11,14 +11,12 @@ use Illuminate\Http\Request;
 
 class BookingMagicLinkController extends Controller
 {
-    public function __construct(private readonly BookingService $bookingService)
-    {
-    }
+    public function __construct(private readonly BookingService $bookingService) {}
 
     public function show(Request $request, Booking $booking): JsonResponse
     {
         $token = $request->query('token');
-        if (! is_string($token) || $token === '' || $token !== $booking->confirmation_token) {
+        if (! is_string($token) || $token === '' || ! $this->tokenMatches($booking, $token)) {
             return response()->json(['message' => 'Invalid or missing link.'], 403);
         }
 
@@ -30,7 +28,7 @@ class BookingMagicLinkController extends Controller
     public function submit(StoreMagicLinkResponseRequest $request, Booking $booking): JsonResponse
     {
         $token = $request->validated('token');
-        if ($token !== $booking->confirmation_token) {
+        if (! $this->tokenMatches($booking, $token)) {
             return response()->json(['message' => 'Invalid or missing link.'], 403);
         }
 
@@ -53,6 +51,23 @@ class BookingMagicLinkController extends Controller
             'message' => 'Thanks — your reply has been saved.',
             'data' => $this->magicLinkPayload($booking->refresh()),
         ]);
+    }
+
+    private function tokenMatches(Booking $booking, string $token): bool
+    {
+        if ($booking->confirmation_token_expires_at?->isPast()) {
+            return false;
+        }
+
+        if ($booking->confirmation_token_hash) {
+            return hash_equals($booking->confirmation_token_hash, hash('sha256', $token));
+        }
+
+        if ($booking->confirmation_token !== null) {
+            return hash_equals($booking->confirmation_token, $token);
+        }
+
+        return false;
     }
 
     /**

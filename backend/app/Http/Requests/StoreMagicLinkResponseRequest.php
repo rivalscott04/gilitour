@@ -17,7 +17,7 @@ class StoreMagicLinkResponseRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'token' => ['required', 'string'],
+            'token' => ['required', 'string', 'max:128'],
             'action' => ['required', 'in:confirm,cancel,reschedule'],
         ];
     }

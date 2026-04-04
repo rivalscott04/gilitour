@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\ChatTemplate;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreChatTemplateRequest extends FormRequest
@@ -11,7 +12,7 @@ class StoreChatTemplateRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        return $this->user() !== null && $this->user()->can('create', ChatTemplate::class);
     }
 
     /**

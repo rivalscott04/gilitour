@@ -9,8 +9,6 @@ use App\Http\Resources\BookingResource;
 use App\Models\Booking;
 use App\Services\BookingService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\URL;
-
 class BookingController extends Controller
 {
     public function __construct(private readonly BookingService $bookingService)
@@ -46,8 +44,8 @@ class BookingController extends Controller
     public function issueConfirmationLink(Booking $booking)
     {
         $booking = $this->bookingService->generateConfirmationToken($booking);
-        $url = URL::route('booking.confirm-click', [
-            'booking' => $booking->id,
+        $base = config('app.frontend_url');
+        $url = $base.'/booking/'.$booking->id.'/respond?'.http_build_query([
             'token' => $booking->confirmation_token,
         ]);
 
@@ -58,21 +56,5 @@ class BookingController extends Controller
             ],
         ]);
     }
-
-    public function confirmClick(Request $request, Booking $booking)
-    {
-        if ($request->query('token') !== $booking->confirmation_token) {
-            return response()->json(['message' => 'Invalid token'], 403);
-        }
-
-        $updated = $this->bookingService->confirmByLink($booking);
-
-        return response()->json([
-            'message' => 'Booking confirmed. Thank you!',
-            'data' => [
-                'booking_id' => $updated->id,
-                'status' => $updated->status,
-            ],
-        ]);
-    }
 }
+

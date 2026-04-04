@@ -37,7 +37,7 @@ class BookingApiTest extends TestCase
         ]);
     }
 
-    public function test_it_issues_clickable_confirmation_link_and_confirms_booking(): void
+    public function test_it_issues_magic_link_url_pointing_at_frontend_spa(): void
     {
         $booking = Booking::factory()->create([
             'status' => 'pending',
@@ -48,15 +48,71 @@ class BookingApiTest extends TestCase
         $issue->assertOk()->assertJsonPath('data.booking_id', $booking->id);
 
         $link = $issue->json('data.confirm_url');
-        $pathAndQuery = parse_url($link, PHP_URL_PATH).'?'.parse_url($link, PHP_URL_QUERY);
-        $this->getJson($pathAndQuery)
+        $this->assertStringContainsString('/booking/'.$booking->id.'/respond', $link);
+        $this->assertStringContainsString('token=', $link);
+    }
+
+    public function test_magic_link_api_preflight_and_confirm(): void
+    {
+        $booking = Booking::factory()->create([
+            'status' => 'pending',
+            'confirmation_token' => null,
+        ]);
+
+        $this->postJson("/api/v1/bookings/{$booking->id}/issue-confirm-link")->assertOk();
+        $token = $booking->fresh()->confirmation_token;
+        $this->assertNotNull($token);
+
+        $this->getJson("/api/v1/bookings/{$booking->id}/magic-link?token={$token}")
             ->assertOk()
-            ->assertJsonPath('data.status', 'confirmed');
+            ->assertJsonPath('data.view', 'form');
+
+        $this->postJson("/api/v1/bookings/{$booking->id}/magic-link", [
+            'token' => $token,
+            'action' => 'confirm',
+        ])->assertOk()
+            ->assertJsonPath('data.view', 'done')
+            ->assertJsonPath('data.customer_response', 'confirmed');
 
         $this->assertDatabaseHas('bookings', [
             'id' => $booking->id,
             'status' => 'confirmed',
+            'customer_response' => 'confirmed',
         ]);
+    }
+
+    public function test_magic_link_records_cancel_and_reschedule(): void
+    {
+        $pending = Booking::factory()->create([
+            'status' => 'pending',
+            'confirmation_token' => 'tok-cancel-test',
+            'needs_attention' => false,
+        ]);
+
+        $this->postJson("/api/v1/bookings/{$pending->id}/magic-link", [
+            'token' => 'tok-cancel-test',
+            'action' => 'cancel',
+        ])->assertOk();
+
+        $pending->refresh();
+        $this->assertSame('cancelled', $pending->status);
+        $this->assertSame('cancelled', $pending->customer_response);
+
+        $confirmed = Booking::factory()->create([
+            'status' => 'confirmed',
+            'confirmation_token' => 'tok-resched-test',
+            'needs_attention' => false,
+        ]);
+
+        $this->postJson("/api/v1/bookings/{$confirmed->id}/magic-link", [
+            'token' => 'tok-resched-test',
+            'action' => 'reschedule',
+        ])->assertOk();
+
+        $confirmed->refresh();
+        $this->assertSame('pending', $confirmed->status);
+        $this->assertTrue($confirmed->needs_attention);
+        $this->assertSame('reschedule_requested', $confirmed->customer_response);
     }
 
     public function test_it_updates_local_operational_fields_without_touching_external_data(): void

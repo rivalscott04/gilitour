@@ -14,6 +14,8 @@ export interface Booking {
   participants: number;
   notes: string;
   confirmUrl: string | null;
+  customerResponse: "confirmed" | "cancelled" | "reschedule_requested" | null;
+  customerRespondedAt: string | null;
   internalNotes: string;
   assignedToName: string;
   tags: string[];

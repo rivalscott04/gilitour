@@ -96,21 +96,97 @@ class BookingService
         return $booking->refresh();
     }
 
-    public function confirmByLink(Booking $booking): Booking
+    /**
+     * @param  string  $action  confirm|cancel|reschedule
+     */
+    public function respondViaMagicLink(Booking $booking, string $action): Booking
     {
-        if ($booking->status === 'confirmed') {
-            return $booking;
+        if ($booking->customer_response !== null) {
+            return $booking->refresh();
         }
 
         $oldStatus = $booking->status;
+
+        return match ($action) {
+            'confirm' => $this->magicLinkConfirm($booking, $oldStatus),
+            'cancel' => $this->magicLinkCancel($booking, $oldStatus),
+            'reschedule' => $this->magicLinkReschedule($booking, $oldStatus),
+            default => $booking->refresh(),
+        };
+    }
+
+    public function confirmByLink(Booking $booking): Booking
+    {
+        return $this->respondViaMagicLink($booking, 'confirm');
+    }
+
+    private function magicLinkConfirm(Booking $booking, string $oldStatus): Booking
+    {
+        if ($booking->status === 'cancelled') {
+            return $booking->refresh();
+        }
+
         $booking->update([
             'status' => 'confirmed',
-            'confirmed_at' => now(),
+            'confirmed_at' => $booking->confirmed_at ?? now(),
+            'customer_response' => 'confirmed',
+            'customer_responded_at' => now(),
         ]);
 
-        $this->logStatusEvent($booking, $oldStatus, 'confirmed', 'customer', 'confirm_link_click', 'web');
+        if ($oldStatus !== 'confirmed') {
+            $this->logStatusEvent($booking, $oldStatus, 'confirmed', 'customer', 'magic_link_confirm', 'web');
+        }
 
         return $booking->refresh();
+    }
+
+    private function magicLinkCancel(Booking $booking, string $oldStatus): Booking
+    {
+        $booking->update([
+            'status' => 'cancelled',
+            'customer_response' => 'cancelled',
+            'customer_responded_at' => now(),
+        ]);
+
+        if ($oldStatus !== 'cancelled') {
+            $this->logStatusEvent($booking, $oldStatus, 'cancelled', 'customer', 'magic_link_cancel', 'web');
+        }
+
+        return $booking->refresh();
+    }
+
+    private function magicLinkReschedule(Booking $booking, string $oldStatus): Booking
+    {
+        if ($booking->status === 'cancelled') {
+            return $booking->refresh();
+        }
+
+        $payload = [
+            'needs_attention' => true,
+            'customer_response' => 'reschedule_requested',
+            'customer_responded_at' => now(),
+        ];
+
+        if ($oldStatus === 'confirmed') {
+            $payload['status'] = 'pending';
+            $payload['confirmed_at'] = null;
+        }
+
+        $booking->update($payload);
+        $booking->refresh();
+
+        $this->logStatusEvent(
+            $booking,
+            $oldStatus,
+            $booking->status,
+            'customer',
+            'magic_link_reschedule',
+            'web',
+            null,
+            ['customer_response' => 'reschedule_requested']
+        );
+
+        return $booking;
     }
 
     private function logStatusEvent(

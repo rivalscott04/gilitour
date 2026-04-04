@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { apiGet, apiPatch } from "@/lib/api-client";
+import { apiGet, apiPatch, apiPost } from "@/lib/api-client";
 import {
   type BookingApiItem,
   type LaravelItemResponse,
@@ -38,6 +38,29 @@ export function useBooking(id?: string) {
     queryFn: async () => {
       const payload = await apiGet<LaravelItemResponse<BookingApiItem>>(`/bookings/${id}`);
       return toBooking(payload.data);
+    },
+  });
+}
+
+interface IssueConfirmationLinkResponse {
+  data: {
+    booking_id: number | string;
+    confirm_url: string;
+  };
+}
+
+export function useIssueConfirmationLink() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const payload = await apiPost<IssueConfirmationLinkResponse>(`/bookings/${id}/issue-confirm-link`, {});
+      return payload.data;
+    },
+    onSuccess: (data) => {
+      const id = String(data.booking_id);
+      queryClient.invalidateQueries({ queryKey: ["booking", id] });
+      queryClient.invalidateQueries({ queryKey: ["bookings"] });
     },
   });
 }

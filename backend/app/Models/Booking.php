@@ -25,6 +25,8 @@ class Booking extends Model
         'status',
         'confirmation_token',
         'confirmed_at',
+        'customer_response',
+        'customer_responded_at',
         'participants',
         'notes',
         'internal_notes',
@@ -38,6 +40,7 @@ class Booking extends Model
         return [
             'tour_start_at' => 'datetime',
             'confirmed_at' => 'datetime',
+            'customer_responded_at' => 'datetime',
             'tags' => 'array',
             'needs_attention' => 'boolean',
         ];

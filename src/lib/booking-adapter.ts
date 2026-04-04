@@ -15,6 +15,8 @@ export interface BookingApiItem {
   participants: number;
   notes: string | null;
   confirm_url: string | null;
+  customer_response: "confirmed" | "cancelled" | "reschedule_requested" | null;
+  customer_responded_at: string | null;
   internal_notes: string | null;
   assigned_to_name: string | null;
   tags: string[] | null;
@@ -44,6 +46,8 @@ export function toBooking(item: BookingApiItem): Booking {
     participants: item.participants,
     notes: item.notes ?? "",
     confirmUrl: item.confirm_url,
+    customerResponse: item.customer_response ?? null,
+    customerRespondedAt: item.customer_responded_at ?? null,
     internalNotes: item.internal_notes ?? "",
     assignedToName: item.assigned_to_name ?? "",
     tags: item.tags ?? [],

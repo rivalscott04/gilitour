@@ -13,7 +13,7 @@ class ChatTemplateService
     private const DEFAULT_TEMPLATES = [
         [
             'name' => 'Booking Reminder',
-            'content' => '{{greeting}} {{customerName}}! Just a friendly reminder for your upcoming {{tourName}}. We will send further details shortly. Please confirm if you are ready!',
+            'content' => '{{greeting}} {{customerName}}! Friendly reminder: you already have {{tourName}} booked. Please let us know if you’re still joining us on the day, or if anything changed. Thanks!',
         ],
         [
             'name' => 'Thank You',

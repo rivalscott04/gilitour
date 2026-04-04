@@ -1,5 +1,4 @@
-import { ReactNode } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Outlet } from "react-router-dom";
 import { LayoutDashboard, CalendarCheck, MessageCircle, Menu, X, FileText, Users, BarChart3 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -13,7 +12,7 @@ const navItems = [
   { label: "Templates", path: "/templates", icon: FileText },
 ];
 
-export function AppLayout({ children }: { children: ReactNode }) {
+export function AppLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -89,7 +88,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
 
       {/* Main content */}
       <main className="max-w-[1200px] mx-auto px-4 py-8">
-        {children}
+        <Outlet />
       </main>
     </div>
   );

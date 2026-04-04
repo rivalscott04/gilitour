@@ -6,16 +6,18 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { CountdownTimer } from "@/components/CountdownTimer";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { useBooking, useUpdateBookingStatus } from "@/hooks/use-bookings";
+import { useBooking, useIssueConfirmationLink, useUpdateBookingStatus } from "@/hooks/use-bookings";
 import { EmptyState, ErrorState } from "@/components/states";
 import { RefreshHint } from "@/components/feedback/RefreshHint";
 import { PageHeader } from "@/components/layout";
+import { digitsForWhatsApp } from "@/lib/utils";
 
 export default function BookingDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { data: booking, isLoading, isError, refetch, isFetching } = useBooking(id);
   const updateStatusMutation = useUpdateBookingStatus();
+  const issueConfirmationMutation = useIssueConfirmationLink();
 
   if (isLoading) {
     return (
@@ -60,6 +62,8 @@ export default function BookingDetail() {
 
   const tourDate = new Date(booking.date);
   const isUpcoming = tourDate.getTime() > Date.now() && booking.status !== "cancelled";
+  const waDigits = digitsForWhatsApp(booking.customerPhone);
+  const canWhatsApp = waDigits.length > 0;
 
   const details = [
     { icon: Calendar, label: "Date & Time", value: `${format(tourDate, "MMM d, yyyy")} at ${booking.time}` },
@@ -79,13 +83,45 @@ export default function BookingDetail() {
         },
         {
           onSuccess: () => {
-            toast.success("Booking confirmed successfully");
+            toast.success("Marked as attending");
           },
           onError: () => {
-            toast.error("Failed to confirm booking");
+            toast.error("Could not update status");
           },
         },
       );
+    }
+  };
+
+  const handleSendConfirmationWhatsApp = async () => {
+    if (!booking || booking.status !== "pending") return;
+
+    const digits = digitsForWhatsApp(booking.customerPhone);
+    if (!digits) {
+      toast.error("Add a customer phone number before sending WhatsApp.");
+      return;
+    }
+
+    try {
+      let confirmUrl = booking.confirmUrl;
+      if (!confirmUrl) {
+        const data = await issueConfirmationMutation.mutateAsync(booking.id);
+        confirmUrl = data.confirm_url;
+      }
+
+      const text = [
+        `Hi ${booking.customerName},`,
+        "",
+        `Quick reminder about your tour "${booking.tourName}" — you’re already booked (e.g. via GetYourGuide).`,
+        "Please tap the link and let us know if you’re still joining us, if you need another time, or if you can’t make it:",
+        confirmUrl,
+        "",
+        "Thank you!",
+      ].join("\n");
+
+      window.open(`https://wa.me/${digits}?text=${encodeURIComponent(text)}`, "_blank");
+    } catch {
+      toast.error("Could not create reminder link. Try again.");
     }
   };
 
@@ -132,6 +168,23 @@ export default function BookingDetail() {
           ))}
         </div>
 
+        {booking.customerResponse && (
+          <div className="mt-6 p-3 rounded-lg border border-border bg-background-subtle">
+            <p className="text-sm text-muted-foreground mb-1">Guest reply (reminder link)</p>
+            <p className="text-sm font-medium">
+              {booking.customerResponse === "confirmed" && "Still joining — noted via link"}
+              {booking.customerResponse === "cancelled" && "Can’t make it — noted via link"}
+              {booking.customerResponse === "reschedule_requested" &&
+                "Needs new time / running late — noted via link"}
+            </p>
+            {booking.customerRespondedAt && (
+              <p className="text-xs text-muted-foreground mt-1">
+                {format(new Date(booking.customerRespondedAt), "MMM d, yyyy 'at' h:mm a")}
+              </p>
+            )}
+          </div>
+        )}
+
         {booking.notes && (
           <div className="mt-6 p-3 rounded-lg bg-background-subtle">
             <p className="text-sm text-muted-foreground mb-1">Notes</p>
@@ -141,33 +194,58 @@ export default function BookingDetail() {
       </div>
 
       {/* Actions */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <Button className="flex-1 gap-2" onClick={() => window.open(`https://wa.me/1234567890?text=Hi, regarding my booking ${booking.id}...`, '_blank')}>
-          <MessageCircle className="h-4 w-4" />
-          Chat on WhatsApp
-        </Button>
-        {booking.status === "pending" ? (
-          <Button 
-            className="flex-1 gap-2 bg-green-600 hover:bg-green-700 text-white" 
+      <div className="space-y-3">
+        <div className="flex flex-col sm:flex-row gap-3">
+          <Button
+            className="flex-1 gap-2"
+            disabled={!canWhatsApp}
+            title={canWhatsApp ? undefined : "No phone number on file"}
+            onClick={() => {
+              if (!canWhatsApp) return;
+              const text = `Hi ${booking.customerName}, this is about your booking for "${booking.tourName}" (ref ${booking.id}).`;
+              window.open(`https://wa.me/${waDigits}?text=${encodeURIComponent(text)}`, "_blank");
+            }}
+          >
+            <MessageCircle className="h-4 w-4" />
+            Chat on WhatsApp
+          </Button>
+          {booking.status === "pending" ? (
+            <Button
+              className="flex-1 gap-2 bg-green-600 hover:bg-green-700 text-white"
+              onClick={() => void handleSendConfirmationWhatsApp()}
+              disabled={!canWhatsApp || issueConfirmationMutation.isPending}
+            >
+              <MessageCircle className="h-4 w-4" />
+              {issueConfirmationMutation.isPending ? "Preparing link…" : "Send reminder link"}
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              className="flex-1"
+              disabled={!canWhatsApp}
+              onClick={() => {
+                if (!canWhatsApp) return;
+                const text = evaluateTemplate(chatTemplates[0].content, {
+                  customerName: booking.customerName,
+                  tourName: booking.tourName,
+                });
+                window.open(`https://wa.me/${waDigits}?text=${encodeURIComponent(text)}`, "_blank");
+              }}
+            >
+              Send reminder
+            </Button>
+          )}
+        </div>
+        {booking.status === "pending" && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full text-muted-foreground"
             onClick={handleConfirmBooking}
             disabled={updateStatusMutation.isPending}
           >
-            <CheckCircle2 className="h-4 w-4" />
-            {updateStatusMutation.isPending ? "Confirming..." : "Confirm Booking"}
-          </Button>
-        ) : (
-          <Button 
-            variant="outline" 
-            className="flex-1"
-            onClick={() => {
-              const text = evaluateTemplate(chatTemplates[0].content, {
-                customerName: booking.customerName,
-                tourName: booking.tourName
-              });
-              window.open(`https://wa.me/${booking.customerPhone.replace(/\D/g, '')}?text=${encodeURIComponent(text)}`, '_blank');
-            }}
-          >
-            Send reminder
+            <CheckCircle2 className="h-4 w-4 mr-2" />
+            {updateStatusMutation.isPending ? "Saving…" : "Mark as attending manually (dashboard)"}
           </Button>
         )}
       </div>

@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# Frontend env (use .env.example, .env.development, .env.production as templates)
+.env
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

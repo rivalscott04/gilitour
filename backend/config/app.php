@@ -56,6 +56,17 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | SPA / public frontend URL (magic links, customer-facing pages)
+    |--------------------------------------------------------------------------
+    |
+    | Vite dev: http://127.0.0.1:5173 — production: https://app.yourdomain.com
+    |
+    */
+
+    'frontend_url' => rtrim((string) env('FRONTEND_URL', env('APP_URL', 'http://localhost')), '/'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------
     |

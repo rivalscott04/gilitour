@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\BookingController;
+use App\Http\Controllers\Api\V1\BookingMagicLinkController;
 use App\Http\Controllers\Api\V1\AnalyticsController;
 use App\Http\Controllers\Api\V1\ChatController;
 use App\Http\Controllers\Api\V1\ChatTemplateController;
@@ -23,7 +24,8 @@ Route::prefix('v1')->group(function (): void {
     Route::patch('/bookings/{booking}/status', [BookingController::class, 'updateStatus']);
     Route::patch('/bookings/{booking}/local-fields', [BookingController::class, 'updateLocalFields']);
     Route::post('/bookings/{booking}/issue-confirm-link', [BookingController::class, 'issueConfirmationLink']);
-    Route::get('/bookings/{booking}/confirm-click', [BookingController::class, 'confirmClick'])->name('booking.confirm-click');
+    Route::get('/bookings/{booking}/magic-link', [BookingMagicLinkController::class, 'show']);
+    Route::post('/bookings/{booking}/magic-link', [BookingMagicLinkController::class, 'submit']);
 
     Route::get('/chats', [ChatController::class, 'index']);
     Route::get('/chats/{booking}/messages', [ChatController::class, 'messages']);

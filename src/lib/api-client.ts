@@ -1,8 +1,16 @@
-const DEFAULT_API_BASE_URL = "http://localhost:8000/api/v1";
+const DEV_DEFAULT = "http://localhost:8000/api/v1";
+/** Production build default: same origin + reverse proxy (e.g. nginx → Laravel). */
+const PROD_DEFAULT = "/api/v1";
 
-export const API_BASE_URL =
-  (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, "") ??
-  DEFAULT_API_BASE_URL;
+function resolveApiBaseUrl(): string {
+  const fromEnv = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.trim();
+  if (fromEnv) {
+    return fromEnv.replace(/\/$/, "");
+  }
+  return import.meta.env.DEV ? DEV_DEFAULT : PROD_DEFAULT;
+}
+
+export const API_BASE_URL = resolveApiBaseUrl();
 
 interface ApiErrorPayload {
   message?: string;

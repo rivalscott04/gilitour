@@ -4,7 +4,6 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\URL;
 
 class BookingResource extends JsonResource
 {
@@ -28,8 +27,10 @@ class BookingResource extends JsonResource
             'guide_name' => $this->guide_name,
             'status' => $this->status,
             'confirm_url' => $this->confirmation_token
-                ? URL::route('booking.confirm-click', ['booking' => $this->id, 'token' => $this->confirmation_token])
+                ? $this->frontendMagicLinkUrl()
                 : null,
+            'customer_response' => $this->customer_response,
+            'customer_responded_at' => $this->customer_responded_at?->toISOString(),
             'participants' => $this->participants,
             'notes' => $this->notes,
             'internal_notes' => $this->internal_notes,
@@ -37,5 +38,14 @@ class BookingResource extends JsonResource
             'tags' => $this->tags ?? [],
             'needs_attention' => $this->needs_attention,
         ];
+    }
+
+    private function frontendMagicLinkUrl(): string
+    {
+        $base = config('app.frontend_url');
+
+        return $base.'/booking/'.$this->id.'/respond?'.http_build_query([
+            'token' => $this->confirmation_token,
+        ]);
     }
 }

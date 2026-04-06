@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { StatusBadge } from "@/components/StatusBadge";
 import { CountdownTimer } from "@/components/CountdownTimer";
-import { toast } from "sonner";
+import { toast } from "@/lib/island-toast-api";
 import { useBooking, useUpdateBookingStatus } from "@/hooks/use-bookings";
 import { useChatMessages, useChatThreads, useSendChatMessage } from "@/hooks/use-chat";
 import type { ChatMessage } from "@/types/chat";

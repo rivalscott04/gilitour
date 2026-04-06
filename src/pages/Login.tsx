@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CalendarCheck, Lock, Mail } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/island-toast-api";
 import { ApiError, apiPost, setAuthToken } from "@/lib/api-client";
 import { DASHBOARD_BASE } from "@/lib/routes";
 
@@ -34,7 +34,7 @@ export default function Login() {
     try {
       const payload = await apiPost<LoginResponse>(
         "/auth/login",
-        { email, password },
+        { email: email.trim(), password },
         { skipAuth: true },
       );
       setAuthToken(payload.data.token);
@@ -153,7 +153,10 @@ export default function Login() {
                 <div className="w-full border-t border-slate-200" />
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-slate-500">Seeded users (run db:seed)</span>
+                <span className="px-2 bg-white text-slate-500">
+                  Seeded users — run in <code className="text-slate-700">backend/</code>:{" "}
+                  <code className="text-slate-700">php artisan db:seed</code>
+                </span>
               </div>
             </div>
             <div className="mt-6 grid grid-cols-2 gap-3 text-xs text-slate-600">

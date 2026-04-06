@@ -2,7 +2,7 @@ import { useMemo, useState, type ReactNode } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { format, parseISO } from "date-fns";
 import { Calendar, Loader2 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/island-toast-api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";

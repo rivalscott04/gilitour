@@ -59,7 +59,7 @@ return [
     | SPA / public frontend URL (magic links, customer-facing pages)
     |--------------------------------------------------------------------------
     |
-    | Vite dev: http://127.0.0.1:5173 — production: https://app.yourdomain.com
+    | Local SPA (repo root): http://127.0.0.1:5173 — production: https://app.yourdomain.com
     |
     */
 

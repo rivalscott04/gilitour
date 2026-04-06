@@ -4,7 +4,7 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { apiPost, clearAuthSession } from "@/lib/api-client";
 import { DASHBOARD_BASE } from "@/lib/routes";
-import { toast } from "sonner";
+import { toast } from "@/lib/island-toast-api";
 
 const base = DASHBOARD_BASE;
 

@@ -31,6 +31,7 @@ Route::prefix('v1')->group(function (): void {
         Route::get('/dashboard/recent-bookings', [DashboardController::class, 'recentBookings']);
 
         Route::get('/bookings', [BookingController::class, 'index']);
+        Route::get('/bookings/assignees', [BookingController::class, 'assignees']);
         Route::get('/customers', [CustomerController::class, 'index']);
         Route::get('/bookings/{booking}', [BookingController::class, 'show']);
         Route::patch('/bookings/{booking}/status', [BookingController::class, 'updateStatus']);

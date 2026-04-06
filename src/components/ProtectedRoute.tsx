@@ -1,5 +1,5 @@
 import { Navigate, Outlet } from "react-router-dom";
-import { toast } from "sonner";
+import { toast } from "@/lib/island-toast-api";
 import { getAuthToken } from "@/lib/api-client";
 
 interface ProtectedRouteProps {

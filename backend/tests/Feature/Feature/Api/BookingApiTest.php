@@ -163,4 +163,33 @@ class BookingApiTest extends AuthenticatedApiTestCase
             'needs_attention' => 1,
         ]);
     }
+
+    public function test_it_lists_assignee_suggestions_for_visible_bookings(): void
+    {
+        Booking::factory()->create([
+            'user_id' => $this->apiUser->id,
+            'assigned_to_name' => 'Ops Team Zebra',
+        ]);
+        Booking::factory()->create([
+            'user_id' => $this->apiUser->id,
+            'assigned_to_name' => 'Ops Team Alpha',
+        ]);
+        Booking::factory()->create([
+            'user_id' => $this->apiUser->id,
+            'assigned_to_name' => 'Ops Team Alpha',
+        ]);
+
+        $peer = User::factory()->create(['role' => 'operator']);
+        Booking::factory()->create([
+            'user_id' => $peer->id,
+            'assigned_to_name' => 'Other Company Ops',
+        ]);
+
+        $all = $this->getJson('/api/v1/bookings/assignees')->assertOk()->json('data');
+        $this->assertSame(['Ops Team Alpha', 'Ops Team Zebra'], $all);
+        $this->assertNotContains('Other Company Ops', $all);
+
+        $filtered = $this->getJson('/api/v1/bookings/assignees?q=Zeb')->assertOk()->json('data');
+        $this->assertSame(['Ops Team Zebra'], $filtered);
+    }
 }

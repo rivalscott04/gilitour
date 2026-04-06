@@ -13,6 +13,27 @@ interface UseBookingsParams {
   status?: BookingStatus | "all";
 }
 
+export function useAssigneeSuggestions(query: string, enabled: boolean) {
+  const params = new URLSearchParams();
+  const trimmed = query.trim();
+  if (trimmed) {
+    params.set("q", trimmed);
+  }
+
+  const qs = params.toString();
+  const path = qs ? `/bookings/assignees?${qs}` : "/bookings/assignees";
+
+  return useQuery({
+    queryKey: ["bookings", "assignees", qs],
+    queryFn: async () => {
+      const payload = await apiGet<{ data: string[] }>(path);
+      return payload.data;
+    },
+    enabled,
+    staleTime: 30_000,
+  });
+}
+
 export function useBookings(params: UseBookingsParams = {}) {
   const queryParams = new URLSearchParams();
 
@@ -118,6 +139,7 @@ export function useUpdateBookingLocalFields() {
         if (!current) return current;
         return current.map((item) => (item.id === updatedBooking.id ? updatedBooking : item));
       });
+      queryClient.invalidateQueries({ queryKey: ["bookings", "assignees"] });
     },
   });
 }

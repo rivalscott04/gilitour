@@ -2,8 +2,7 @@ import { lazy, Suspense } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Loader2 } from "lucide-react";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { Toaster } from "@/components/ui/toaster";
+import { IslandToastProvider } from "@/components/island-toast";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppLayout } from "@/components/AppLayout";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
@@ -33,114 +32,114 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <Suspense fallback={<RouteFallback />}>
-                <Landing />
-              </Suspense>
-            }
-          />
-          <Route
-            path="/login"
-            element={
-              <Suspense fallback={<RouteFallback />}>
-                <Login />
-              </Suspense>
-            }
-          />
-          <Route
-            path="/booking/:bookingId/respond"
-            element={
-              <Suspense fallback={<RouteFallback />}>
-                <BookingMagicRespond />
-              </Suspense>
-            }
-          />
-          <Route path="/dashboard" element={<ProtectedRoute />}>
-            <Route element={<AppLayout />}>
-              <Route
-                index
-                element={
-                  <Suspense fallback={<RouteFallback />}>
-                    <Index />
-                  </Suspense>
-                }
-              />
-              <Route
-                path="bookings"
-                element={
-                  <Suspense fallback={<RouteFallback />}>
-                    <BookingList />
-                  </Suspense>
-                }
-              />
-              <Route
-                path="customers"
-                element={
-                  <Suspense fallback={<RouteFallback />}>
-                    <CustomerList />
-                  </Suspense>
-                }
-              />
-              <Route
-                path="analytics"
-                element={
-                  <Suspense fallback={<RouteFallback />}>
-                    <Analytics />
-                  </Suspense>
-                }
-              />
-              <Route
-                path="bookings/:id"
-                element={
-                  <Suspense fallback={<RouteFallback />}>
-                    <BookingDetail />
-                  </Suspense>
-                }
-              />
-              <Route
-                path="chat"
-                element={
-                  <Suspense fallback={<RouteFallback />}>
-                    <Chat />
-                  </Suspense>
-                }
-              />
-              <Route
-                path="chat/:bookingId"
-                element={
-                  <Suspense fallback={<RouteFallback />}>
-                    <Chat />
-                  </Suspense>
-                }
-              />
-              <Route
-                path="templates"
-                element={
-                  <Suspense fallback={<RouteFallback />}>
-                    <ChatTemplates />
-                  </Suspense>
-                }
-              />
+    <IslandToastProvider>
+      <TooltipProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <Suspense fallback={<RouteFallback />}>
+                  <Landing />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/login"
+              element={
+                <Suspense fallback={<RouteFallback />}>
+                  <Login />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/booking/:bookingId/respond"
+              element={
+                <Suspense fallback={<RouteFallback />}>
+                  <BookingMagicRespond />
+                </Suspense>
+              }
+            />
+            <Route path="/dashboard" element={<ProtectedRoute />}>
+              <Route element={<AppLayout />}>
+                <Route
+                  index
+                  element={
+                    <Suspense fallback={<RouteFallback />}>
+                      <Index />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="bookings"
+                  element={
+                    <Suspense fallback={<RouteFallback />}>
+                      <BookingList />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="customers"
+                  element={
+                    <Suspense fallback={<RouteFallback />}>
+                      <CustomerList />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="analytics"
+                  element={
+                    <Suspense fallback={<RouteFallback />}>
+                      <Analytics />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="bookings/:id"
+                  element={
+                    <Suspense fallback={<RouteFallback />}>
+                      <BookingDetail />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="chat"
+                  element={
+                    <Suspense fallback={<RouteFallback />}>
+                      <Chat />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="chat/:bookingId"
+                  element={
+                    <Suspense fallback={<RouteFallback />}>
+                      <Chat />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="templates"
+                  element={
+                    <Suspense fallback={<RouteFallback />}>
+                      <ChatTemplates />
+                    </Suspense>
+                  }
+                />
+              </Route>
             </Route>
-          </Route>
-          <Route
-            path="*"
-            element={
-              <Suspense fallback={<RouteFallback />}>
-                <NotFound />
-              </Suspense>
-            }
-          />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+            <Route
+              path="*"
+              element={
+                <Suspense fallback={<RouteFallback />}>
+                  <NotFound />
+                </Suspense>
+              }
+            />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </IslandToastProvider>
   </QueryClientProvider>
 );
 

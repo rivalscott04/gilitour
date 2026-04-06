@@ -46,6 +46,35 @@ class BookingService
         return $booking->refresh();
     }
 
+    /**
+     * Distinct assignee labels already used on visible bookings (for autocomplete).
+     *
+     * @return list<string>
+     */
+    public function assigneeNameSuggestions(User $viewer, ?string $q = null): array
+    {
+        $q = $q !== null ? trim($q) : '';
+        if (strlen($q) > 200) {
+            $q = substr($q, 0, 200);
+        }
+
+        $safe = str_replace(['%', '_'], '', $q);
+
+        return $viewer->bookingsVisibleQuery()
+            ->whereNotNull('assigned_to_name')
+            ->where('assigned_to_name', '!=', '')
+            ->when($safe !== '', function ($query) use ($safe): void {
+                $query->where('assigned_to_name', 'like', '%'.$safe.'%');
+            })
+            ->select('assigned_to_name')
+            ->distinct()
+            ->orderBy('assigned_to_name')
+            ->limit(30)
+            ->pluck('assigned_to_name')
+            ->values()
+            ->all();
+    }
+
     public function updateLocalFields(Booking $booking, array $payload): Booking
     {
         $booking->update([

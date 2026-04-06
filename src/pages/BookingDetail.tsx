@@ -5,7 +5,7 @@ import { chatTemplates, evaluateTemplate } from "@/data/templates";
 import { StatusBadge } from "@/components/StatusBadge";
 import { CountdownTimer } from "@/components/CountdownTimer";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+import { toast } from "@/lib/island-toast-api";
 import { useBooking, useIssueConfirmationLink, useUpdateBookingStatus } from "@/hooks/use-bookings";
 import { EmptyState, ErrorState } from "@/components/states";
 import { RefreshHint } from "@/components/feedback/RefreshHint";

@@ -3,7 +3,7 @@ import { Plus, MessageSquareText, Save, Trash2, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { chatTemplates, ChatTemplate, evaluateTemplate } from "@/data/templates";
-import { toast } from "sonner";
+import { toast } from "@/lib/island-toast-api";
 import { Textarea } from "@/components/ui/textarea";
 
 export default function ChatTemplates() {

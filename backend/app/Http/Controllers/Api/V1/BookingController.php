@@ -23,6 +23,19 @@ class BookingController extends Controller
         return BookingResource::collection($bookings);
     }
 
+    public function assignees(Request $request)
+    {
+        $this->authorize('viewAny', Booking::class);
+
+        $q = $request->query('q');
+        $names = $this->bookingService->assigneeNameSuggestions(
+            $request->user(),
+            is_string($q) ? $q : null,
+        );
+
+        return response()->json(['data' => $names]);
+    }
+
     public function show(Request $request, Booking $booking): BookingResource
     {
         $this->authorize('view', $booking);

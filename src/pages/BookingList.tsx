@@ -3,6 +3,7 @@ import { Search } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 import { BookingCard } from "@/components/BookingCard";
 import { Input } from "@/components/ui/input";
+import { AssigneeSuggestInput } from "@/components/AssigneeSuggestInput";
 import { useBookings, useUpdateBookingLocalFields } from "@/hooks/use-bookings";
 import type { BookingStatus } from "@/types/booking";
 import { EmptyState, ErrorState, LoadingCardGrid } from "@/components/states";
@@ -19,7 +20,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { toast } from "sonner";
+import { toast } from "@/lib/island-toast-api";
 import {
   Pagination,
   PaginationContent,
@@ -241,7 +242,15 @@ export default function BookingList() {
           <div className="space-y-3">
             <div className="space-y-2">
               <p className="text-sm text-muted-foreground">Assigned To</p>
-              <Input value={assignedToName} onChange={(e) => setAssignedToName(e.target.value)} />
+              <AssigneeSuggestInput
+                value={assignedToName}
+                onChange={setAssignedToName}
+                enabled={Boolean(selectedBooking)}
+                disabled={updateLocalFieldsMutation.isPending}
+              />
+              <p className="text-xs text-muted-foreground">
+                Suggestions come from assignee names already used on your bookings. You can still type a new name.
+              </p>
             </div>
 
             <div className="space-y-2">

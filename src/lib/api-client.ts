@@ -3,6 +3,21 @@ const DEV_DEFAULT = "http://localhost:8000/api/v1";
 const PROD_DEFAULT = "/api/v1";
 
 const AUTH_TOKEN_KEY = "gilitour_auth_token";
+const USER_ROLE_KEY = "userRole";
+
+/** Matches Laravel `users.role` (`admin` | `operator`). */
+export type UserRole = "admin" | "operator";
+
+export function getUserRole(): UserRole | null {
+  if (typeof localStorage === "undefined") {
+    return null;
+  }
+  const raw = localStorage.getItem(USER_ROLE_KEY);
+  if (raw === "admin" || raw === "operator") {
+    return raw;
+  }
+  return null;
+}
 
 function resolveApiBaseUrl(): string {
   const fromEnv = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.trim();
@@ -35,7 +50,7 @@ export function setAuthToken(token: string | null): void {
 export function clearAuthSession(): void {
   setAuthToken(null);
   if (typeof localStorage !== "undefined") {
-    localStorage.removeItem("userRole");
+    localStorage.removeItem(USER_ROLE_KEY);
   }
 }
 

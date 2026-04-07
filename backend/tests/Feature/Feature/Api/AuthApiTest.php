@@ -15,18 +15,18 @@ class AuthApiTest extends TestCase
     public function test_login_returns_token_and_user_payload(): void
     {
         $user = User::factory()->create([
-            'email' => 'ops@test.local',
+            'email' => 'guide@test.local',
             'password' => 'secret123',
             'role' => 'operator',
         ]);
 
         $response = $this->postJson('/api/v1/auth/login', [
-            'email' => 'ops@test.local',
+            'email' => 'guide@test.local',
             'password' => 'secret123',
         ]);
 
         $response->assertOk()
-            ->assertJsonPath('data.user.email', 'ops@test.local')
+            ->assertJsonPath('data.user.email', 'guide@test.local')
             ->assertJsonPath('data.user.role', 'operator')
             ->assertJsonPath('data.token_type', 'Bearer')
             ->assertJsonStructure(['data' => ['token', 'token_type', 'user']]);
@@ -37,12 +37,12 @@ class AuthApiTest extends TestCase
     public function test_login_rejects_invalid_credentials(): void
     {
         User::factory()->create([
-            'email' => 'ops@test.local',
+            'email' => 'guide@test.local',
             'password' => 'correct',
         ]);
 
         $response = $this->postJson('/api/v1/auth/login', [
-            'email' => 'ops@test.local',
+            'email' => 'guide@test.local',
             'password' => 'wrong-password',
         ]);
 

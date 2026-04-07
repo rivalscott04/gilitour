@@ -212,7 +212,7 @@ class AnalyticsService
                 ]);
             }
             fclose($out);
-        }, 'bookings-ops-export.csv', ['Content-Type' => 'text/csv']);
+        }, 'bookings-guide-export.csv', ['Content-Type' => 'text/csv']);
     }
 
     private function topTags(User $viewer): array

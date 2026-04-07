@@ -89,7 +89,7 @@ export default function Login() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="pl-10"
-                  placeholder="ops@gilitour.test"
+                  placeholder="guide@gilitour.test"
                 />
               </div>
             </div>
@@ -166,8 +166,8 @@ export default function Login() {
                 <p>password</p>
               </div>
               <div className="bg-slate-50 p-3 rounded-md border border-slate-200">
-                <p className="font-semibold text-slate-800 mb-1">Operator</p>
-                <p>ops@gilitour.test</p>
+                <p className="font-semibold text-slate-800 mb-1">Guide</p>
+                <p>guide@gilitour.test</p>
                 <p>password</p>
               </div>
             </div>

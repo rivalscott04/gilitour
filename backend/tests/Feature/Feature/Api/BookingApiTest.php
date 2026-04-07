@@ -132,7 +132,7 @@ class BookingApiTest extends AuthenticatedApiTestCase
         $this->assertSame('reschedule_requested', $confirmed->customer_response);
     }
 
-    public function test_it_updates_local_operational_fields_without_touching_external_data(): void
+    public function test_it_updates_local_guide_fields_without_touching_external_data(): void
     {
         $booking = Booking::factory()->create([
             'tour_name' => 'External Tour Name',
@@ -145,21 +145,21 @@ class BookingApiTest extends AuthenticatedApiTestCase
 
         $response = $this->patchJson("/api/v1/bookings/{$booking->id}/local-fields", [
             'internal_notes' => 'Customer requested hotel pickup.',
-            'assigned_to_name' => 'Ops Team A',
+            'assigned_to_name' => 'Guide Team A',
             'tags' => ['pickup', 'vip'],
             'needs_attention' => true,
         ]);
 
         $response->assertOk()
             ->assertJsonPath('data.internal_notes', 'Customer requested hotel pickup.')
-            ->assertJsonPath('data.assigned_to_name', 'Ops Team A')
+            ->assertJsonPath('data.assigned_to_name', 'Guide Team A')
             ->assertJsonPath('data.needs_attention', true)
             ->assertJsonPath('data.tour_name', 'External Tour Name');
 
         $this->assertDatabaseHas('bookings', [
             'id' => $booking->id,
             'tour_name' => 'External Tour Name',
-            'assigned_to_name' => 'Ops Team A',
+            'assigned_to_name' => 'Guide Team A',
             'needs_attention' => 1,
         ]);
     }
@@ -168,28 +168,28 @@ class BookingApiTest extends AuthenticatedApiTestCase
     {
         Booking::factory()->create([
             'user_id' => $this->apiUser->id,
-            'assigned_to_name' => 'Ops Team Zebra',
+            'assigned_to_name' => 'Guide Team Zebra',
         ]);
         Booking::factory()->create([
             'user_id' => $this->apiUser->id,
-            'assigned_to_name' => 'Ops Team Alpha',
+            'assigned_to_name' => 'Guide Team Alpha',
         ]);
         Booking::factory()->create([
             'user_id' => $this->apiUser->id,
-            'assigned_to_name' => 'Ops Team Alpha',
+            'assigned_to_name' => 'Guide Team Alpha',
         ]);
 
         $peer = User::factory()->create(['role' => 'operator']);
         Booking::factory()->create([
             'user_id' => $peer->id,
-            'assigned_to_name' => 'Other Company Ops',
+            'assigned_to_name' => 'Other Company Guide',
         ]);
 
         $all = $this->getJson('/api/v1/bookings/assignees')->assertOk()->json('data');
-        $this->assertSame(['Ops Team Alpha', 'Ops Team Zebra'], $all);
-        $this->assertNotContains('Other Company Ops', $all);
+        $this->assertSame(['Guide Team Alpha', 'Guide Team Zebra'], $all);
+        $this->assertNotContains('Other Company Guide', $all);
 
         $filtered = $this->getJson('/api/v1/bookings/assignees?q=Zeb')->assertOk()->json('data');
-        $this->assertSame(['Ops Team Zebra'], $filtered);
+        $this->assertSame(['Guide Team Zebra'], $filtered);
     }
 }

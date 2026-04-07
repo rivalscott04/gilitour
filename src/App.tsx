@@ -78,22 +78,24 @@ const App = () => (
                     </Suspense>
                   }
                 />
-                <Route
-                  path="customers"
-                  element={
-                    <Suspense fallback={<RouteFallback />}>
-                      <CustomerList />
-                    </Suspense>
-                  }
-                />
-                <Route
-                  path="analytics"
-                  element={
-                    <Suspense fallback={<RouteFallback />}>
-                      <Analytics />
-                    </Suspense>
-                  }
-                />
+                <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
+                  <Route
+                    path="customers"
+                    element={
+                      <Suspense fallback={<RouteFallback />}>
+                        <CustomerList />
+                      </Suspense>
+                    }
+                  />
+                  <Route
+                    path="analytics"
+                    element={
+                      <Suspense fallback={<RouteFallback />}>
+                        <Analytics />
+                      </Suspense>
+                    }
+                  />
+                </Route>
                 <Route
                   path="bookings/:id"
                   element={
@@ -118,14 +120,16 @@ const App = () => (
                     </Suspense>
                   }
                 />
-                <Route
-                  path="templates"
-                  element={
-                    <Suspense fallback={<RouteFallback />}>
-                      <ChatTemplates />
-                    </Suspense>
-                  }
-                />
+                <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
+                  <Route
+                    path="templates"
+                    element={
+                      <Suspense fallback={<RouteFallback />}>
+                        <ChatTemplates />
+                      </Suspense>
+                    }
+                  />
+                </Route>
               </Route>
             </Route>
             <Route

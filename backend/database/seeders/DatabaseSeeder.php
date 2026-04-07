@@ -46,10 +46,10 @@ class DatabaseSeeder extends Seeder
             ],
         );
 
-        $operator = User::query()->updateOrCreate(
-            ['email' => 'ops@gilitour.test'],
+        $guideUser = User::query()->updateOrCreate(
+            ['email' => 'guide@gilitour.test'],
             [
-                'name' => 'Ops Lead',
+                'name' => 'Guide Lead',
                 'password' => 'password',
                 'role' => 'operator',
             ],
@@ -137,9 +137,9 @@ class DatabaseSeeder extends Seeder
         ];
         $guides = ['Rahman', 'Lalu', 'Ari', 'Teguh', 'Fadli', 'Zul', 'Irfan'];
         $statuses = ['standby', 'confirmed', 'cancelled'];
-        $opsTeams = ['Ops Team A', 'Ops Team B', 'Ops Team C'];
+        $guideTeams = ['Guide Team A', 'Guide Team B', 'Guide Team C'];
 
-        $customers->each(function (Customer $customer, int $index) use ($operator, $tours, $locations, $guides, $statuses, $opsTeams): void {
+        $customers->each(function (Customer $customer, int $index) use ($guideUser, $tours, $locations, $guides, $statuses, $guideTeams): void {
             $bookingCount = $index % 3 === 0 ? 2 : 1;
 
             foreach (range(1, $bookingCount) as $i) {
@@ -148,7 +148,7 @@ class DatabaseSeeder extends Seeder
                 $needsAttention = $status !== 'cancelled' && $tourStart->isBetween(now(), now()->addDays(2));
 
                 $booking = Booking::query()->create([
-                    'user_id' => $operator->id,
+                    'user_id' => $guideUser->id,
                     'customer_id' => $customer->id,
                     'tour_name' => $tours[($index + $i) % count($tours)],
                     'customer_name' => $customer->full_name,
@@ -161,7 +161,7 @@ class DatabaseSeeder extends Seeder
                     'participants' => (($index + $i) % 4) + 1,
                     'notes' => 'Seeded booking data for demo environment.',
                     'internal_notes' => $needsAttention ? 'Please reconfirm pickup location one day before departure.' : null,
-                    'assigned_to_name' => $opsTeams[($index + $i) % count($opsTeams)],
+                    'assigned_to_name' => $guideTeams[($index + $i) % count($guideTeams)],
                     'tags' => $needsAttention ? ['pickup', 'follow-up'] : ['standard'],
                     'needs_attention' => $needsAttention,
                 ]);
@@ -205,7 +205,7 @@ class DatabaseSeeder extends Seeder
         Booking::query()->delete();
         Customer::query()->delete();
         ChatTemplate::query()->delete();
-        User::query()->whereIn('email', ['admin@gilitour.test', 'ops@gilitour.test', 'support@gilitour.test'])->delete();
+        User::query()->whereIn('email', ['admin@gilitour.test', 'guide@gilitour.test', 'support@gilitour.test'])->delete();
         if (DB::getDriverName() === 'mysql') {
             DB::statement('SET FOREIGN_KEY_CHECKS=1');
         } else {

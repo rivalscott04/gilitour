@@ -1,26 +1,40 @@
 import { useNavigate, useLocation, Outlet } from "react-router-dom";
+import type { LucideIcon } from "lucide-react";
 import { LayoutDashboard, CalendarCheck, MessageCircle, Menu, X, FileText, Users, BarChart3, LogOut } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
-import { apiPost, clearAuthSession } from "@/lib/api-client";
+import { apiPost, clearAuthSession, getUserRole } from "@/lib/api-client";
 import { DASHBOARD_BASE } from "@/lib/routes";
 import { toast } from "@/lib/island-toast-api";
 
 const base = DASHBOARD_BASE;
 
-const navItems = [
+type NavItem = {
+  label: string;
+  path: string;
+  icon: LucideIcon;
+  /** When true, only `admin` sees this link (guide/operator accounts use role `operator` in the API). */
+  adminOnly?: boolean;
+};
+
+const navItems: NavItem[] = [
   { label: "Dashboard", path: base, icon: LayoutDashboard },
   { label: "Bookings", path: `${base}/bookings`, icon: CalendarCheck },
-  { label: "Customers", path: `${base}/customers`, icon: Users },
-  { label: "Analytics", path: `${base}/analytics`, icon: BarChart3 },
+  { label: "Customers", path: `${base}/customers`, icon: Users, adminOnly: true },
+  { label: "Analytics", path: `${base}/analytics`, icon: BarChart3, adminOnly: true },
   { label: "Chat", path: `${base}/chat`, icon: MessageCircle },
-  { label: "Templates", path: `${base}/templates`, icon: FileText },
+  { label: "Templates", path: `${base}/templates`, icon: FileText, adminOnly: true },
 ];
 
 export function AppLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const role = getUserRole();
+  const visibleNavItems = useMemo(
+    () => navItems.filter((item) => !item.adminOnly || role === "admin"),
+    [role],
+  );
 
   const isActive = (path: string) => {
     if (path === base) {
@@ -62,7 +76,7 @@ export function AppLayout() {
 
           {/* Desktop nav */}
           <nav className="hidden lg:flex items-center gap-1">
-            {navItems.map((item) => (
+            {visibleNavItems.map((item) => (
               <button
                 key={item.path}
                 onClick={() => navigate(item.path)}
@@ -93,7 +107,7 @@ export function AppLayout() {
       {mobileOpen && (
         <div className="lg:hidden fixed inset-0 top-14 z-40 bg-background/80 backdrop-blur-sm" onClick={() => setMobileOpen(false)}>
           <nav className="bg-primary p-2 space-y-1" onClick={(e) => e.stopPropagation()}>
-            {navItems.map((item) => (
+            {visibleNavItems.map((item) => (
               <button
                 key={item.path}
                 onClick={() => { navigate(item.path); setMobileOpen(false); }}

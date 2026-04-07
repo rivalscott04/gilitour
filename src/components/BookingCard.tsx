@@ -10,10 +10,10 @@ import { DASHBOARD_BASE } from "@/lib/routes";
 
 export function BookingCard({
   booking,
-  onManageOps,
+  onManageGuide,
 }: {
   booking: Booking;
-  onManageOps?: (booking: Booking) => void;
+  onManageGuide?: (booking: Booking) => void;
 }) {
   const navigate = useNavigate();
   const tourDate = new Date(booking.date);
@@ -79,14 +79,14 @@ export function BookingCard({
           <MessageCircle className="h-4 w-4" />
           Chat
         </Button>
-        {onManageOps && (
+        {onManageGuide && (
           <Button
             variant="outline"
             size="sm"
             className="gap-1.5"
-            onClick={() => onManageOps(booking)}
+            onClick={() => onManageGuide(booking)}
           >
-            Ops
+            Guide
           </Button>
         )}
         <Button

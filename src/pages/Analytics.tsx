@@ -96,7 +96,7 @@ export default function Analytics() {
     <div className="space-y-6">
       <PageHeader
         title="Analytics"
-        description="Detailed booking intelligence for daily operational decisions."
+        description="Detailed booking intelligence for daily guide decisions."
         meta={`Live overview · ${data.total_bookings} total bookings tracked`}
         action={
           <Button asChild>
@@ -152,7 +152,7 @@ export default function Analytics() {
         </div>
 
         <div className="bg-card rounded-xl card-shadow border border-border p-5">
-          <h2 className="font-semibold mb-3">Top Operational Tags</h2>
+          <h2 className="font-semibold mb-3">Top Guide Tags</h2>
           <div className="flex flex-wrap gap-2">
             {data.top_tags.length === 0 ? (
               <EmptyState title="No tags yet." layout="compact" />
@@ -187,7 +187,7 @@ export default function Analytics() {
         </div>
 
         <div className="rounded-xl border border-border bg-card p-5 card-shadow">
-          <p className="font-semibold">Operational Focus</p>
+          <p className="font-semibold">Guide Focus</p>
           <p className="text-sm text-muted-foreground mt-1">
             {attentionLevel === "high" && "High follow-up volume detected. Prioritize pending confirmations today."}
             {attentionLevel === "medium" &&

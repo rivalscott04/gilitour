@@ -87,7 +87,7 @@ export default function BookingList() {
     [bookings],
   );
 
-  const openManageOps = (booking: Booking) => {
+  const openManageGuide = (booking: Booking) => {
     setSelectedBooking(booking);
     setInternalNotes(booking.internalNotes);
     setAssignedToName(booking.assignedToName);
@@ -95,7 +95,7 @@ export default function BookingList() {
     setNeedsAttention(booking.needsAttention);
   };
 
-  const handleSaveOps = () => {
+  const handleSaveGuide = () => {
     if (!selectedBooking) return;
     const tags = tagsInput.split(",").map((tag) => tag.trim()).filter(Boolean);
     updateLocalFieldsMutation.mutate(
@@ -108,10 +108,10 @@ export default function BookingList() {
       },
       {
         onSuccess: () => {
-          toast.success("Operational fields saved");
+          toast.success("Guide fields saved");
           setSelectedBooking(null);
         },
-        onError: () => toast.error("Failed to save operational fields"),
+        onError: () => toast.error("Failed to save guide fields"),
       },
     );
   };
@@ -177,7 +177,7 @@ export default function BookingList() {
         <>
           <div className="grid sm:grid-cols-2 lg:grid-cols-2 gap-4">
             {paginatedBookings.map((b) => (
-              <BookingCard key={b.id} booking={b} onManageOps={openManageOps} />
+              <BookingCard key={b.id} booking={b} onManageGuide={openManageGuide} />
             ))}
           </div>
 
@@ -233,9 +233,9 @@ export default function BookingList() {
       <Dialog open={Boolean(selectedBooking)} onOpenChange={(open) => !open && setSelectedBooking(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Operational Controls</DialogTitle>
+            <DialogTitle>Guide</DialogTitle>
             <DialogDescription>
-              Edit local operational fields without changing scraped source data.
+              Edit local guide fields without changing scraped source data.
             </DialogDescription>
           </DialogHeader>
 
@@ -271,7 +271,7 @@ export default function BookingList() {
               <Switch checked={needsAttention} onCheckedChange={setNeedsAttention} />
             </div>
 
-            <Button onClick={handleSaveOps} disabled={updateLocalFieldsMutation.isPending}>
+            <Button onClick={handleSaveGuide} disabled={updateLocalFieldsMutation.isPending}>
               {updateLocalFieldsMutation.isPending ? "Saving..." : "Save"}
             </Button>
           </div>

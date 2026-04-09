@@ -148,18 +148,7 @@ export default function Login() {
           </form>
 
           <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-slate-200" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-slate-500">
-                  Seeded users — run in <code className="text-slate-700">backend/</code>:{" "}
-                  <code className="text-slate-700">php artisan db:seed</code>
-                </span>
-              </div>
-            </div>
-            <div className="mt-6 grid grid-cols-2 gap-3 text-xs text-slate-600">
+            <div className="grid grid-cols-2 gap-3 text-xs text-slate-600">
               <div className="bg-slate-50 p-3 rounded-md border border-slate-200">
                 <p className="font-semibold text-slate-800 mb-1">Admin</p>
                 <p>admin@gilitour.test</p>

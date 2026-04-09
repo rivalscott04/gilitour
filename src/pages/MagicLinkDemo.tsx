@@ -1,10 +1,18 @@
 import { useEffect, useMemo, useState } from "react";
-import { ExternalLink, RefreshCw, Copy, CheckCircle2, ChevronsUpDown, Check } from "lucide-react";
+import { ExternalLink, RefreshCw, Copy, CheckCircle2, ChevronsUpDown, Check, MessageCircle } from "lucide-react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Command,
   CommandEmpty,
@@ -31,6 +39,9 @@ export default function MagicLinkDemo() {
   const [generatedLink, setGeneratedLink] = useState<string | null>(null);
   const [autoRefresh, setAutoRefresh] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [whatsappDialogOpen, setWhatsappDialogOpen] = useState(false);
+  const [whatsappPhone, setWhatsappPhone] = useState("");
+  const [whatsappMessage, setWhatsappMessage] = useState("");
 
   const { data: bookings = [], isLoading: listLoading, isError: listError, refetch: refetchList } = useBookings({
     status: "all",
@@ -49,6 +60,11 @@ export default function MagicLinkDemo() {
   const { data: booking, isLoading, isError, refetch, isFetching } = useBooking(activeBookingId ?? undefined);
 
   const canGenerate = useMemo(() => Boolean(activeBookingId), [activeBookingId]);
+  const linkLabel = selectedFromList?.tourName ?? booking?.tourName ?? "your booking";
+  const recipientName = selectedFromList?.customerName ?? booking?.customerName ?? "there";
+
+  const buildWhatsappMessage = (confirmUrl: string) =>
+    `Hi ${recipientName},\n\nPlease confirm your attendance for ${linkLabel} by opening this magic link:\n${confirmUrl}\n\nThank you.`;
 
   useEffect(() => {
     if (!autoRefresh || !activeBookingId) return;
@@ -79,6 +95,7 @@ export default function MagicLinkDemo() {
     try {
       const data = await issueConfirmationMutation.mutateAsync(activeBookingId);
       setGeneratedLink(data.confirm_url);
+      setWhatsappMessage(buildWhatsappMessage(data.confirm_url));
       toast.success("Magic link generated successfully.");
     } catch {
       toast.error("Failed to generate magic link.");
@@ -93,6 +110,33 @@ export default function MagicLinkDemo() {
     } catch {
       toast.error("Clipboard failed. Please copy the link manually.");
     }
+  };
+
+  const sanitizeWhatsappNumber = (raw: string) => raw.replace(/\D/g, "");
+
+  const handleOpenWhatsappDialog = () => {
+    if (!generatedLink) return;
+    setWhatsappPhone("");
+    setWhatsappMessage((prev) => prev || buildWhatsappMessage(generatedLink));
+    setWhatsappDialogOpen(true);
+  };
+
+  const handleSendToWhatsapp = () => {
+    if (!generatedLink) return;
+    const phone = sanitizeWhatsappNumber(whatsappPhone);
+    if (!phone) {
+      toast.error("Please enter a valid WhatsApp number.");
+      return;
+    }
+    if (!whatsappMessage.includes(generatedLink)) {
+      toast.error("Please include the magic link in the WhatsApp message.");
+      return;
+    }
+
+    const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(whatsappMessage)}`;
+    window.open(waUrl, "_blank", "noopener,noreferrer");
+    setWhatsappDialogOpen(false);
+    toast.success("WhatsApp message is ready to send.");
   };
 
   return (
@@ -253,6 +297,10 @@ export default function MagicLinkDemo() {
                   <Copy className="h-4 w-4" />
                   Copy
                 </Button>
+                <Button variant="outline" className="gap-2" onClick={handleOpenWhatsappDialog}>
+                  <MessageCircle className="h-4 w-4" />
+                  Send to WhatsApp
+                </Button>
                 <Button
                   variant="outline"
                   className="gap-2"
@@ -266,6 +314,47 @@ export default function MagicLinkDemo() {
           )}
         </CardContent>
       </Card>
+
+      <Dialog open={whatsappDialogOpen} onOpenChange={setWhatsappDialogOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Send magic link to WhatsApp</DialogTitle>
+            <DialogDescription>
+              Enter destination phone number, review the message, then confirm to open WhatsApp.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <p className="text-sm font-medium">Destination number</p>
+              <Input
+                value={whatsappPhone}
+                onChange={(e) => setWhatsappPhone(e.target.value)}
+                placeholder="e.g. 6281234567890"
+              />
+              <p className="text-xs text-muted-foreground">
+                Use country code format. Any spaces or symbols will be removed automatically.
+              </p>
+            </div>
+            <div className="space-y-2">
+              <p className="text-sm font-medium">Message preview</p>
+              <textarea
+                value={whatsappMessage}
+                onChange={(e) => setWhatsappMessage(e.target.value)}
+                className="min-h-36 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              />
+              <p className="text-xs text-muted-foreground">
+                Keep the magic link in the message so recipient can open and confirm.
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setWhatsappDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSendToWhatsapp}>Confirm & Open WhatsApp</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {activeBookingId && (
         <Card className="border-border">

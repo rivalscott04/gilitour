@@ -6,6 +6,7 @@ import { IslandToastProvider } from "@/components/island-toast";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppLayout } from "@/components/AppLayout";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import MagicLinkDemo from "./pages/MagicLinkDemo";
 
 const Index = lazy(() => import("./pages/Index"));
 const Landing = lazy(() => import("./pages/Landing"));
@@ -129,6 +130,7 @@ const App = () => (
                       </Suspense>
                     }
                   />
+                  <Route path="magic-link-demo" element={<MagicLinkDemo />} />
                 </Route>
               </Route>
             </Route>

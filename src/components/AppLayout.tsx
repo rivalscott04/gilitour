@@ -1,6 +1,6 @@
 import { useNavigate, useLocation, Outlet } from "react-router-dom";
 import type { LucideIcon } from "lucide-react";
-import { LayoutDashboard, CalendarCheck, MessageCircle, Menu, X, FileText, Users, BarChart3, LogOut } from "lucide-react";
+import { LayoutDashboard, CalendarCheck, MessageCircle, Menu, X, FileText, Users, BarChart3, LogOut, FlaskConical } from "lucide-react";
 import { useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 import { apiPost, clearAuthSession, getUserRole } from "@/lib/api-client";
@@ -24,6 +24,7 @@ const navItems: NavItem[] = [
   { label: "Analytics", path: `${base}/analytics`, icon: BarChart3, adminOnly: true },
   { label: "Chat", path: `${base}/chat`, icon: MessageCircle },
   { label: "Templates", path: `${base}/templates`, icon: FileText, adminOnly: true },
+  { label: "Magic Link Demo", path: `${base}/magic-link-demo`, icon: FlaskConical, adminOnly: true },
 ];
 
 export function AppLayout() {

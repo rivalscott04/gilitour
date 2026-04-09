@@ -25,7 +25,7 @@ export function BookingCard({
         <div className="min-w-0 flex-1">
           <h3 className="font-semibold text-base truncate">{booking.tourName}</h3>
           <p className="text-sm text-muted-foreground mt-0.5">
-            {format(tourDate, "MMM d, yyyy")} · {booking.time}
+            {format(tourDate, "MMM d, yyyy")} · {booking.time} · ID {booking.id}
           </p>
         </div>
         <StatusBadge status={booking.status} />

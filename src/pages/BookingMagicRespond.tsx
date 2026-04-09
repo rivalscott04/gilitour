@@ -172,7 +172,13 @@ export default function BookingMagicRespond() {
     setActing(action);
     try {
       await submit.mutateAsync(action);
-      toast.success("Thanks — we've saved your reply.");
+      if (action === "confirm") {
+        toast.success("Confirmed successfully. See you on the tour!");
+      } else if (action === "cancel") {
+        toast.success("Cancellation has been recorded. Thank you.");
+      } else {
+        toast.success("Your reschedule request has been recorded.");
+      }
     } catch (e) {
       if (e instanceof ApiError) {
         toast.error(e.message);

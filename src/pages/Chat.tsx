@@ -9,6 +9,7 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { CountdownTimer } from "@/components/CountdownTimer";
 import { toast } from "@/lib/island-toast-api";
 import { useBooking, useUpdateBookingStatus } from "@/hooks/use-bookings";
+import { isAwaitingConfirmation } from "@/types/booking";
 import { useChatMessages, useChatThreads, useSendChatMessage } from "@/hooks/use-chat";
 import type { ChatMessage } from "@/types/chat";
 import { EmptyState, ErrorState, LoadingState } from "@/components/states";
@@ -183,7 +184,7 @@ export default function Chat() {
   };
 
   const handleConfirmBooking = () => {
-    if (booking && booking.status === "pending") {
+    if (booking && isAwaitingConfirmation(booking.status)) {
       updateStatusMutation.mutate(
         {
           id: booking.id,
@@ -325,7 +326,7 @@ export default function Chat() {
                 <h3 className="font-medium mb-1 leading-tight">{booking.tourName}</h3>
                 <div className="flex items-center gap-2 mt-2">
                    <StatusBadge status={booking.status} />
-                   {booking.status === "pending" && (
+                   {isAwaitingConfirmation(booking.status) && (
                      <Button
                        size="sm"
                        variant="outline"

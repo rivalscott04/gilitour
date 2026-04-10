@@ -36,4 +36,30 @@ class BookingServiceTest extends TestCase
         $this->assertCount(1, $result->items());
         $this->assertSame('Alice', $result->items()[0]->customer_name);
     }
+
+    public function test_it_filters_bookings_by_comma_separated_status(): void
+    {
+        Booking::factory()->create([
+            'customer_name' => 'Standby Guest',
+            'status' => 'standby',
+        ]);
+        Booking::factory()->create([
+            'customer_name' => 'Pending Guest',
+            'status' => 'pending',
+        ]);
+        Booking::factory()->create([
+            'customer_name' => 'Confirmed Guest',
+            'status' => 'confirmed',
+        ]);
+
+        $admin = User::factory()->create(['role' => 'admin']);
+        $service = new BookingService;
+        $result = $service->paginate([
+            'status' => 'standby,pending',
+            'per_page' => 10,
+        ], $admin);
+
+        $names = collect($result->items())->pluck('customer_name')->sort()->values()->all();
+        $this->assertSame(['Pending Guest', 'Standby Guest'], $names);
+    }
 }

@@ -1,4 +1,9 @@
-export type BookingStatus = "confirmed" | "pending" | "cancelled";
+export type BookingStatus = "standby" | "confirmed" | "pending" | "cancelled";
+
+/** Bookings that still need guest confirmation / ops follow-up (DB: standby or pending). */
+export function isAwaitingConfirmation(status: BookingStatus): boolean {
+  return status === "standby" || status === "pending";
+}
 
 export interface Booking {
   id: string;

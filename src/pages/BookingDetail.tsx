@@ -12,6 +12,7 @@ import { RefreshHint } from "@/components/feedback/RefreshHint";
 import { PageHeader } from "@/components/layout";
 import { digitsForWhatsApp } from "@/lib/utils";
 import { DASHBOARD_BASE } from "@/lib/routes";
+import { isAwaitingConfirmation } from "@/types/booking";
 
 const WHATSAPP_PREFILL_MAX_LEN = 2000;
 
@@ -82,7 +83,7 @@ export default function BookingDetail() {
   ];
 
   const handleConfirmBooking = () => {
-    if (booking && booking.status === "pending") {
+    if (booking && isAwaitingConfirmation(booking.status)) {
       updateStatusMutation.mutate(
         {
           id: booking.id,
@@ -101,7 +102,7 @@ export default function BookingDetail() {
   };
 
   const handleSendConfirmationWhatsApp = async () => {
-    if (!booking || booking.status !== "pending") return;
+    if (!booking || !isAwaitingConfirmation(booking.status)) return;
 
     const digits = digitsForWhatsApp(booking.customerPhone);
     if (!digits) {
@@ -222,7 +223,7 @@ export default function BookingDetail() {
             <MessageCircle className="h-4 w-4" />
             Chat on WhatsApp
           </Button>
-          {booking.status === "pending" ? (
+          {isAwaitingConfirmation(booking.status) ? (
             <Button
               className="flex-1 gap-2 bg-green-600 hover:bg-green-700 text-white"
               onClick={() => void handleSendConfirmationWhatsApp()}
@@ -252,7 +253,7 @@ export default function BookingDetail() {
             </Button>
           )}
         </div>
-        {booking.status === "pending" && (
+        {isAwaitingConfirmation(booking.status) && (
           <Button
             variant="ghost"
             size="sm"

@@ -127,7 +127,7 @@ export default function Analytics() {
                 tone={
                   item.status === "confirmed"
                     ? "success"
-                    : item.status === "pending"
+                    : item.status === "pending" || item.status === "standby"
                       ? "warning"
                       : "secondary"
                 }

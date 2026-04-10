@@ -24,6 +24,8 @@ class BookingService
             $sortDir = 'asc';
         }
 
+        $allowedStatuses = ['standby', 'confirmed', 'pending', 'cancelled'];
+
         return $viewer->bookingsVisibleQuery()
             ->with('customer')
             ->when($filters['search'] ?? null, function ($query, string $search): void {
@@ -32,7 +34,21 @@ class BookingService
                         ->orWhere('customer_name', 'like', '%'.$search.'%');
                 });
             })
-            ->when($filters['status'] ?? null, fn ($query, string $status) => $query->where('status', $status))
+            ->when($filters['status'] ?? null, function ($query, string $status) use ($allowedStatuses): void {
+                if (str_contains($status, ',')) {
+                    $parts = array_values(array_filter(array_map('trim', explode(',', $status))));
+                    $safe = array_values(array_intersect($parts, $allowedStatuses));
+                    if ($safe !== []) {
+                        $query->whereIn('status', $safe);
+                    }
+
+                    return;
+                }
+
+                if (in_array($status, $allowedStatuses, true)) {
+                    $query->where('status', $status);
+                }
+            })
             ->orderBy($sortBy, $sortDir)
             ->paginate($perPage);
     }

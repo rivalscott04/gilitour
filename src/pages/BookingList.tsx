@@ -30,7 +30,7 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 
-const filters = ["all", "confirmed", "pending", "cancelled"] as const;
+const filters = ["all", "standby", "pending", "confirmed", "cancelled"] as const;
 const ITEMS_PER_PAGE = 4;
 
 export default function BookingList() {

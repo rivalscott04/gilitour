@@ -2,14 +2,15 @@ import { cn } from "@/lib/utils";
 import type { BookingStatus } from "@/types/booking";
 
 const statusConfig: Record<BookingStatus, { label: string; className: string }> = {
+  standby: { label: "Pending review", className: "bg-warning/10 text-warning" },
   confirmed: { label: "Confirmed", className: "bg-success/10 text-success" },
   pending: { label: "Pending", className: "bg-warning/10 text-warning" },
   cancelled: { label: "Cancelled", className: "bg-destructive/10 text-destructive" },
 };
 
 const fallbackConfig = {
-  label: "Pending review",
-  className: "bg-warning/10 text-warning",
+  label: "Unknown status",
+  className: "bg-muted text-muted-foreground",
 };
 
 export function StatusBadge({ status }: { status: BookingStatus | string | null | undefined }) {

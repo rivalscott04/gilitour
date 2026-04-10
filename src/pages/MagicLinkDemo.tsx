@@ -44,7 +44,7 @@ export default function MagicLinkDemo() {
   const [whatsappMessage, setWhatsappMessage] = useState("");
 
   const { data: bookings = [], isLoading: listLoading, isError: listError, refetch: refetchList } = useBookings({
-    status: "pending",
+    status: "standby,pending",
   });
 
   const sortedBookings = useMemo(() => {
@@ -153,7 +153,8 @@ export default function MagicLinkDemo() {
           <div className="space-y-2">
             <p className="text-sm font-medium">Pick a booking</p>
             <p className="text-sm text-muted-foreground">
-              Open the picker to search by booking ID, guest, tour, location, or status.               With an empty search, pending bookings only (up to 100) are shown. Choosing a row closes the picker.
+              Open the picker to search by booking ID, guest, tour, location, or status.               With an empty search, only bookings in <strong>standby</strong> (pending review) or{" "}
+              <strong>pending</strong> (up to 100) are shown. Choosing a row closes the picker.
             </p>
             {listError ? (
               <p className="text-sm text-destructive">Could not load bookings. Check your connection and try again.</p>

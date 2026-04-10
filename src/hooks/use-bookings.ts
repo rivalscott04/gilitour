@@ -10,7 +10,8 @@ import type { Booking, BookingStatus } from "@/types/booking";
 
 interface UseBookingsParams {
   search?: string;
-  status?: BookingStatus | "all";
+  /** Single status, or comma-separated list (e.g. `standby,pending`) supported by the API. */
+  status?: BookingStatus | "all" | "standby,pending";
 }
 
 export function useAssigneeSuggestions(query: string, enabled: boolean) {
